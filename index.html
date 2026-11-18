@@ -445,7 +445,7 @@ function render(){
   lastMode='';drawRest();
 }
 function header(){const x=totalXp(),l=lvlOf(x),a=40*(l-1)*(l-1),b=40*l*l,p=Math.min(100,(x-a)/(b-a)*100);
-  return `<div class="hdr"><div class="lvl">${l}</div><div class="sp"><div class="row"><b>${esc(S.name||'Lyftari')}</b><span class="sp"></span><span class="mut">${x} Aura-stig</span></div><div class="bar" style="margin-top:6px"><i style="width:${p}%"></i></div></div></div>`}
+  return `<div class="hdr"><div class="lvl">${l}</div><div class="sp"><div class="row"><b>${esc(S.name||'Aura-fari')}</b><span class="sp"></span><span class="mut">${x} Aura-stig</span></div><div class="bar" style="margin-top:6px"><i style="width:${p}%"></i></div></div></div>`}
 
 function vTrain(){
   const a=S.active;
