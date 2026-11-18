@@ -239,7 +239,7 @@ function beep(){
 function startRest(){RT={end:Date.now()+S.rest*1000,dur:S.rest};try{beepCtx=beepCtx||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}drawRest()}
 function drawRest(){
   const el=$('#rest');if(!el)return;
-  if(!S.active||tab!=='train'){if(lastMode){el.innerHTML='';lastMode=''}return}
+  if(!S.active||tab!=='train'){if(el.innerHTML)el.innerHTML='';lastMode='';return}
   let left=0;
   if(RT){left=Math.ceil((RT.end-Date.now())/1000);if(left<=0){RT=null;beep();toast('Hvíld búin – næsta sett!')}}
   const mode=RT?'run':'idle';
