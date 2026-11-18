@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lock In – æfingaapp</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e1117">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lock In">
+<style>
+:root{--bg:#0e1117;--card:#171c26;--card2:#1f2633;--line:#2a3345;--tx:#eef2f8;--mut:#8a96ab;--ac:#3d8bff;--ac2:#22c55e;--warn:#f59e0b;--red:#ef4444}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px}
+#app{max-width:560px;margin:0 auto;padding:16px 14px calc(96px + env(safe-area-inset-bottom))}
+h1{font-size:22px;margin:4px 0 2px}h2{font-size:17px;margin:18px 0 8px}
+.mut{color:var(--mut);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}
+.row{display:flex;align-items:center;gap:10px}.sp{flex:1}
+button{font:inherit;color:var(--tx);background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;cursor:pointer}
+button.pri{background:var(--ac);border-color:var(--ac);font-weight:600}
+button.ok{background:var(--ac2);border-color:var(--ac2);color:#06210f;font-weight:700}
+button.dng{color:var(--red)}button.sm{padding:6px 10px;font-size:13px;border-radius:10px}
+button.full{width:100%}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 10px;width:100%}
+input[type=checkbox]{width:auto}
+nav{position:fixed;left:0;right:0;bottom:0;background:#0b0e14;border-top:1px solid var(--line);display:flex;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:5}
+nav button{flex:1;background:none;border:0;color:var(--mut);font-size:11px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button.on{color:var(--ac)}nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hdr{display:flex;align-items:center;gap:12px}
+.lvl{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#3d8bff,#7c3aed);display:grid;place-items:center;font-weight:800;font-size:18px}
+.bar{height:8px;background:var(--card2);border-radius:6px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--ac)}
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;border:1px solid}
+.badge:before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.sets{display:grid;grid-template-columns:28px 1fr 64px 64px 40px;gap:6px;align-items:center;margin-top:6px}
+.sets .h{font-size:11px;color:var(--mut);text-align:center}
+.sets .n{text-align:center;color:var(--mut);font-weight:700}.sets .pv{font-size:12px;color:var(--mut);text-align:center}
+.sets input{text-align:center;padding:8px 2px}
+.chk{width:38px;height:38px;padding:0;display:grid;place-items:center;border-radius:10px}
+.chk.d{background:var(--ac2);border-color:var(--ac2);color:#06210f}
+.done input{opacity:.65}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:flex-end;justify-content:center;z-index:40}
+.sheet{background:var(--bg);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:16px 14px calc(18px + env(safe-area-inset-bottom))}
+.li{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--line)}
+.li:last-child{border:0}
+.tags{display:flex;gap:6px;flex-wrap:wrap}.tag{font-size:11px;color:var(--mut);background:var(--card2);padding:2px 8px;border-radius:8px}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#fff;color:#111;padding:10px 16px;border-radius:12px;font-weight:600;z-index:50;opacity:0;pointer-events:none;transition:.25s;max-width:90%;text-align:center}
+#toast.s{opacity:1}
+.big{font-size:30px;font-weight:800}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card2);border-radius:12px;padding:10px;text-align:center}.stat b{display:block;font-size:20px}
+svg.ch{width:100%;height:auto;display:block}
+.chip{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 14px;border-radius:12px;background:var(--card2);border:1px solid var(--line);cursor:pointer;user-select:none;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.chip.on{background:var(--ac);border-color:var(--ac)}
+#rest{position:fixed;left:8px;right:8px;bottom:calc(66px + env(safe-area-inset-bottom));max-width:544px;margin:0 auto;z-index:6}
+.restbar{background:#1b2a46;border:1px solid #3d8bff;border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:8px;position:relative;overflow:hidden}
+.restbar .t{font-size:24px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
+.restbar .pg{position:absolute;left:0;bottom:0;height:3px;background:var(--ac2)}
+.thumb{width:64px;flex:none;cursor:pointer}.thumb svg{width:100%;height:auto;display:block}
+.mus{font-size:12px;color:var(--mut)}
+#trun{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center;color:#fff;transition:background .2s}
+#trun .tl{font-size:18px;letter-spacing:3px;font-weight:700;opacity:.85}
+#trun .tt{font-size:96px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+#trun .tn{font-size:26px;font-weight:700}
+#trun .tb{width:min(50vw,210px);background:#0e1117;border-radius:16px;padding:8px}#trun .tb svg{width:100%;height:auto;display:block}
+#trun .tprog{width:100%;height:6px;background:#ffffff30;border-radius:4px;overflow:hidden}#trun .tprog i{display:block;height:100%;background:#fff;width:0}
+#trun.flash{animation:fl .6s 2}
+@keyframes fl{0%,100%{filter:none}50%{filter:brightness(2)}}
+button:disabled{opacity:.4}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav id="nav"></nav>
+<div id="modal"></div>
+<div id="toast"></div>
+<div id="rest"></div>
+<script>
+const KEY='styrkur-v1';
+/* ---- Æfingagrunnur: id|nafn|g (gull-hlutfall)|bw|áhöld|aðalvöðvi|aukavöðvar|stór æfing ---- */
+const GRP={chest:'Brjóst',lats:'Bak',upback:'Bak',shoulders:'Axlir',biceps:'Handleggir',triceps:'Handleggir',quads:'Fætur',hams:'Fætur',glutes:'Fætur',calves:'Fætur',abs:'Kviður'};
+const MU={chest:'Brjóst',lats:'Breiðir bakvöðvar',upback:'Efri bak og herðar',shoulders:'Axlir',biceps:'Biceps',triceps:'Triceps',quads:'Framanlæri',hams:'Aftanlæri',glutes:'Rass',calves:'Kálfar',abs:'Kviður'};
+const EX=`bench|Bekkpressa|1|0|bb|chest|triceps,shoulders|1
+incline|Hallandi bekkpressa|0.85|0|bb|chest|shoulders,triceps|1
+dbpress|Handlóðapressa (hvor hönd)|0.4|0|db|chest|triceps,shoulders|1
+dbincline|Hallandi handlóðapressa (hvor hönd)|0.35|0|db|chest|shoulders,triceps|1
+chestpress|Brjóstpressa í tæki|0.9|0|mach|chest|triceps,shoulders|1
+pushup|Armbeygjur|1.3|1|bw|chest|triceps,shoulders|1
+declpush|Armbeygjur, fætur upphækkaðir|1.2|1|bw|chest|shoulders,triceps|1
+dips|Dýfur|1.5|1|bar|chest|triceps,shoulders|1
+fly|Flug með handlóð (hvor hönd)|0.2|0|db|chest|shoulders|0
+cablefly|Kaðalflug|0.3|0|mach|chest|shoulders|0
+bandpress|Brjóstpressa með teygju|0.3|0|band|chest|triceps|0
+pullup|Upphífingar|1.3|1|bar|lats|biceps,upback|1
+chinup|Upphífingar, undirgrip|1.4|1|bar|lats|biceps|1
+latpull|Niðurtog|0.9|0|mach|lats|biceps|1
+dbrow|Róður með handlóð (hvor hönd)|0.4|0|db|lats|upback,biceps|1
+invrow|Róður undir borði eða rá|1|1|bw|lats|upback,biceps|1
+bandpull|Niðurtog með teygju|0.4|0|band|lats|biceps|0
+straightarm|Beinhandar niðurtog|0.3|0|mach|lats||0
+deadlift|Réttstöðulyfta|1.7|0|bb|upback|hams,glutes,lats|1
+row|Róður með stöng|0.9|0|bb|upback|lats,biceps|1
+cablerow|Róður í tæki|0.9|0|mach|upback|lats,biceps|1
+bandrow|Róður með teygju|0.4|0|band|upback|lats,biceps|0
+facepull|Andlitstog|0.4|0|mach|upback|shoulders|0
+revfly|Öfugt flug með handlóð (hvor hönd)|0.12|0|db|upback|shoulders|0
+shrug|Axlayppur með stöng|1|0|bb|upback||0
+dbshrug|Axlayppur með handlóðum (hvor hönd)|0.5|0|db|upback||0
+superman|Supermann|1.2|1|bw|upback|glutes|0
+birddog|Bird dog|1.2|1|bw|upback|abs,glutes|0
+reversesnow|Öfugur snjóengill|1.2|1|bw|upback|shoulders|0
+plank|Planki|1.3|1|tid|abs|shoulders|0
+sideplank|Hliðarplanki|1.3|1|tid|abs||0
+hollow|Hollow hold|1.3|1|tid|abs||0
+flutter|Flutter kicks|1.3|1|tid|abs||0
+bicycle|Hjólakviðkreppur|1.5|1|bw|abs||0
+russian|Rússneskur snúningur|1.5|1|bw|abs||0
+sumo|Sumo hnébeygja|1.5|1|bw|quads|glutes|1
+sidelunge|Hliðarframstig|1.3|1|bw|quads|glutes|1
+stepup|Upp á stól|1.3|1|bw|quads|glutes|1
+wallsit|Veggstóll|1.3|1|tid|quads||0
+widepush|Breiðar armbeygjur|1.3|1|bw|chest|shoulders,triceps|1
+burpee|Burpees|1.2|1|tid|quads|chest,abs|1
+jacks|Jumping jacks|1.5|1|tid|calves|shoulders|0
+highknees|Hnélyftur|1.5|1|tid|quads|abs,calves|0
+ohp|Axlapressa með stöng|0.65|0|bb|shoulders|triceps|1
+dbohp|Axlapressa með handlóð (hvor hönd)|0.3|0|db|shoulders|triceps|1
+machohp|Axlapressa í tæki|0.6|0|mach|shoulders|triceps|1
+pike|Pike armbeygjur|1|1|bw|shoulders|triceps|1
+lateral|Hliðarlyfta|0.15|0|db|shoulders||0
+cablelateral|Hliðarlyfta í kaðli|0.12|0|mach|shoulders||0
+frontraise|Framlyfta með handlóð|0.15|0|db|shoulders||0
+bandlateral|Hliðarlyfta með teygju|0.1|0|band|shoulders||0
+curl|Bicep curl með stöng|0.5|0|bb|biceps||0
+dbcurl|Bicep curl með handlóðum (hvor hönd)|0.22|0|db|biceps||0
+hammer|Hamarsgrip (hvor hönd)|0.22|0|db|biceps||0
+cablecurl|Curl í kaðli|0.4|0|mach|biceps||0
+bandcurl|Curl með teygju|0.2|0|band|biceps||0
+closegrip|Þröng bekkpressa|0.8|0|bb|triceps|chest|1
+pushdown|Triceps niðurþrýstingur|0.7|0|mach|triceps||0
+skull|Franska pressa|0.5|0|bb|triceps||0
+tricext|Triceps yfir höfuð (handlóð)|0.3|0|db|triceps||0
+diamond|Demantsarmbeygjur|1.2|1|bw|triceps|chest|1
+benchdip|Dýfur á stól|1|1|bw|triceps|chest,shoulders|1
+bandpushdown|Triceps með teygju|0.3|0|band|triceps||0
+squat|Hnébeygja|1.4|0|bb|quads|glutes,hams|1
+legpress|Fótapressa|2.5|0|mach|quads|glutes|1
+goblet|Goblet hnébeygja|0.4|0|db|quads|glutes|1
+bodysquat|Hnébeygja, líkamsþyngd|1.5|1|bw|quads|glutes|1
+lunge|Framstig með handlóðum (hvor hönd)|0.35|0|db|quads|glutes|1
+bwlunge|Framstig, líkamsþyngd|1.3|1|bw|quads|glutes|1
+bulgarian|Búlgarskt split squat|1.3|1|bw|quads|glutes|1
+jumpsquat|Hnébeygjustökk|1.4|1|bw|quads|glutes,calves|1
+legext|Fótaréttur|0.9|0|mach|quads||0
+rdl|Rúmensk réttstöðulyfta|1.3|0|bb|hams|glutes,upback|1
+dbrdl|Rúmensk réttstöðulyfta með handlóðum (hvor hönd)|0.3|0|db|hams|glutes|1
+sglrdl|Einfætt rúmensk réttstöðulyfta|1.2|1|bw|hams|glutes|1
+legcurl|Fótabeygja|0.6|0|mach|hams||0
+slidecurl|Hamstring-renna á gólfi|1|1|bw|hams|glutes|0
+hipthrust|Mjaðmalyfta með stöng|1.5|0|bb|glutes|hams|1
+dbthrust|Mjaðmalyfta með handlóð|0.6|0|db|glutes|hams|1
+bridge|Rassabrú|1.5|1|bw|glutes|hams|1
+sbridge|Einfætt rassabrú|1.2|1|bw|glutes|hams|0
+donkey|Rassspark (donkey kick)|1|1|bw|glutes||0
+cablekick|Rassspark í kaðli|0.2|0|mach|glutes||0
+bandwalk|Hliðarganga með teygju|0.15|0|band|glutes||0
+calf|Tábeygja í tæki|1.5|0|mach|calves||0
+dbcalf|Tábeygja með handlóð (hvor hönd)|0.3|0|db|calves||0
+bwcalf|Tábeygja, líkamsþyngd|1.6|1|bw|calves||0
+crunch|Kviðkreppur|1.5|1|bw|abs||0
+legraise|Fótalyftur í rá|1.2|1|bar|abs||0
+lyingraise|Fótalyftur liggjandi|1.3|1|bw|abs||0
+deadbug|Dead bug|1.3|1|bw|abs||0
+mountain|Fjallaklifur|1.4|1|bw|abs||0
+cablecrunch|Kviðkreppur í kaðli|0.6|0|mach|abs||0`.split('\n').map(l=>{const a=l.split('|');return{id:a[0],name:a[1],g:+a[2],bw:a[3]==='1',eq:a[4].split(','),p:a[5].split(','),s:a[6]?a[6].split(','):[],c:a[7]==='1',grp:GRP[a[5].split(',')[0]]}});
+
+/* ---- Vöðvamynd (einfölduð, framan og aftan) ---- */
+function body(p,s){
+  p=p||[];s=s||[];
+  const B='#232b3a',fl=m=>p.includes(m)?'#3d8bff':s.includes(m)?'#3d8bff80':'#2e3a50';
+  const half=front=>{
+    let h=`<path d="M50 34 Q36 34 26 38 L28 70 Q30 90 33 104 L50 108 Z" fill="${B}"/>
+    <ellipse cx="20" cy="60" rx="7.5" ry="19" transform="rotate(6 20 60)" fill="${B}"/>
+    <ellipse cx="15" cy="92" rx="6" ry="17" transform="rotate(5 15 92)" fill="${B}"/>
+    <ellipse cx="13" cy="114" rx="4" ry="6" fill="${B}"/>
+    <ellipse cx="38" cy="135" rx="12.5" ry="31" fill="${B}"/>
+    <ellipse cx="36" cy="185" rx="8.5" ry="24" fill="${B}"/>
+    <ellipse cx="35" cy="216" rx="8" ry="4" fill="${B}"/>`;
+    if(front)h+=`<ellipse cx="24" cy="42" rx="9" ry="8" fill="${fl('shoulders')}"/>
+    <path d="M50 40 Q38 38 30 47 Q30 60 42 62 L50 60 Z" fill="${fl('chest')}"/>
+    <ellipse cx="19" cy="62" rx="5.5" ry="11" transform="rotate(6 19 62)" fill="${fl('biceps')}"/>
+    <rect x="42" y="64" width="8" height="38" rx="3" fill="${fl('abs')}"/>
+    <ellipse cx="35" cy="82" rx="4.5" ry="14" fill="${fl('abs')}"/>
+    <ellipse cx="38" cy="132" rx="10.5" ry="27" fill="${fl('quads')}"/>
+    <ellipse cx="36" cy="186" rx="6" ry="19" fill="${fl('calves')}"/>`;
+    else h+=`<ellipse cx="24" cy="42" rx="9" ry="8" fill="${fl('shoulders')}"/>
+    <path d="M50 34 Q38 36 28 42 L36 62 L50 66 Z" fill="${fl('upback')}"/>
+    <path d="M30 52 Q27 74 40 92 L50 88 L50 66 L38 62 Z" fill="${fl('lats')}"/>
+    <ellipse cx="19" cy="62" rx="5.5" ry="11" transform="rotate(6 19 62)" fill="${fl('triceps')}"/>
+    <path d="M43 90 L50 88 L50 106 L43 104 Z" fill="${fl('upback')}"/>
+    <ellipse cx="40" cy="113" rx="11" ry="10" fill="${fl('glutes')}"/>
+    <ellipse cx="38" cy="145" rx="10" ry="20" fill="${fl('hams')}"/>
+    <ellipse cx="36" cy="188" rx="7" ry="19" fill="${fl('calves')}"/>`;
+    return h;
+  };
+  const fig=front=>`<circle cx="50" cy="16" r="11" fill="${B}"/><rect x="45" y="26" width="10" height="10" fill="${B}"/>${half(front)}<g transform="translate(100 0) scale(-1 1)">${half(front)}</g>`;
+  return `<svg viewBox="0 0 210 224" xmlns="http://www.w3.org/2000/svg">${fig(true)}<g transform="translate(110 0)">${fig(false)}</g></svg>`;
+}
+const thumb=ex=>`<div class="thumb" data-act="muscle" data-v="${ex.id}">${body(ex.p,ex.s)}</div>`;
+function muscTxt(ex){const a=ex.p.map(m=>MU[m]).join(', '),b=ex.s.map(m=>MU[m]).join(', ');return (a?'Aðal: '+a:'')+(b?' · Aukalega: '+b:'')}
+function muscleModal(id){
+  const ex=getEx(id);
+  modal(`<div class="row"><h1 class="sp" style="margin:0">${esc(ex.name)}</h1><button class="sm" data-act="mclose2">Loka</button></div>
+  <div style="max-width:320px;margin:12px auto 4px">${body(ex.p,ex.s)}</div><div class="mut" style="text-align:center;margin-bottom:12px">Framhlið · Bakhlið</div>
+  <p><span class="badge" style="color:#3d8bff;border-color:#3d8bff55">Aðal</span> ${ex.p.map(m=>MU[m]).join(', ')||'–'}</p>
+  <p><span class="badge" style="color:#8bb4ff;border-color:#8bb4ff55">Aukalega</span> ${ex.s.map(m=>MU[m]).join(', ')||'–'}</p>`);
+}
+
+/* ---- Hvíldartími ---- */
+let RT=null,lastMode='',beepCtx=null;
+const fmtT=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+function beep(){
+  try{beepCtx=beepCtx||new (window.AudioContext||window.webkitAudioContext)();if(beepCtx.state==='suspended')beepCtx.resume();
+    const o=beepCtx.createOscillator(),g=beepCtx.createGain();o.connect(g);g.connect(beepCtx.destination);o.frequency.value=880;g.gain.value=.25;o.start();o.stop(beepCtx.currentTime+.4)}catch(e){}
+  try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
+}
+function startRest(){RT={end:Date.now()+S.rest*1000,dur:S.rest};try{beepCtx=beepCtx||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}drawRest()}
+function drawRest(){
+  const el=$('#rest');if(!el)return;
+  if(!S.active||tab!=='train'){if(lastMode){el.innerHTML='';lastMode=''}return}
+  let left=0;
+  if(RT){left=Math.ceil((RT.end-Date.now())/1000);if(left<=0){RT=null;beep();toast('Hvíld búin – næsta sett! 💪')}}
+  const mode=RT?'run':'idle';
+  if(mode!==lastMode){
+    el.innerHTML=mode==='run'
+      ?`<div class="restbar"><button class="sm" data-act="restAdj" data-v="-15">−15</button><div class="t sp"></div><button class="sm" data-act="restAdj" data-v="15">+15</button><button class="sm pri" data-act="restSkip">Sleppa</button><div class="pg"></div></div>`
+      :`<div class="restbar"><button class="sm" data-act="restS" data-v="-15">−15</button><div class="t sp"></div><button class="sm" data-act="restS" data-v="15">+15</button><button class="sm ok" data-act="restGo">Hvíld</button></div>`;
+    lastMode=mode;
+  }
+  if(RT){el.querySelector('.t').textContent=fmtT(left);el.querySelector('.pg').style.width=Math.max(0,Math.min(100,left/RT.dur*100))+'%'}
+  else el.querySelector('.t').textContent='⏱ '+fmtT(S.rest);
+}
+setInterval(drawRest,500);
+
+/* ---- Prógramm-smiður ---- */
+const EQ=[['db','Handlóð'],['bb','Stöng'],['bar','Upphífingarrá / dýfustöng'],['band','Teygjur'],['mach','Vélar / kaðaltæki']];
+const TPL={
+  FA:['Heill líkami A',['quads','chest','lats','shoulders','biceps','abs']],
+  FB:['Heill líkami B',['hams','glutes','upback','chest','triceps','calves']],
+  FC:['Heill líkami C',['quads','lats','shoulders','glutes','biceps','triceps','abs']],
+  UA:['Efri hluti A',['chest','lats','shoulders','upback','biceps','triceps']],
+  UB:['Efri hluti B',['lats','chest','upback','shoulders','triceps','biceps']],
+  LA:['Neðri hluti A',['quads','hams','glutes','calves','abs']],
+  LB:['Neðri hluti B',['glutes','quads','hams','calves','abs']],
+  PU:['Ýta',['chest','shoulders','chest','shoulders','triceps','triceps']],
+  PL:['Toga',['lats','upback','lats','upback','biceps','biceps']],
+  LG:['Fætur',['quads','hams','glutes','quads','calves','abs']]
+};
+const SPLIT={2:['UA','LA'],3:['PU','PL','LG'],4:['UA','LA','UB','LB'],5:['PU','PL','LG','UA','LA'],6:['PU','PL','LG','PU','PL','LG']};
+const DAYS={2:['Mán','Fim'],3:['Mán','Mið','Fös'],4:['Mán','Þri','Fim','Fös'],5:['Mán','Þri','Mið','Fim','Fös'],6:['Mán','Þri','Mið','Fim','Fös','Lau']};
+let askCb=null;
+function ask(msg,cb,yes){askCb=cb;modal(`<p style="font-size:17px;margin:6px 0 14px">${esc(msg)}</p><div class="row"><button class="sp" data-act="askNo">Nei</button><button class="sp pri" data-act="askYes">${yes||'Já'}</button></div>`)}
+let G={place:'gym',days:3,focus:[],eq:['db','bb','bar','mach'],seed:0},GEN=null;
+function generate(){
+  const eq=G.eq,foc=G.focus;
+  const sess=SPLIT[G.days].map(k=>({name:TPL[k][0],slots:TPL[k][1].map(m=>({m,f:foc.includes(m)}))}));
+  sess.forEach(s=>foc.forEach(m=>{if(s.slots.some(x=>x.m===m))s.slots.push({m,f:true})}));
+  if(G.days!==3)foc.forEach(m=>{let n=sess.filter(s=>s.slots.some(x=>x.m===m)).length;const need=Math.min(2,sess.length);
+    for(let i=0;n<need&&i<sess.length;i++){if(!sess[i].slots.some(x=>x.m===m)){sess[i].slots.push({m,f:true});n++}}});
+  sess.forEach(s=>{while(s.slots.length>8){let idx=-1;for(let i=s.slots.length-1;i>=0;i--)if(!s.slots[i].f){idx=i;break}if(idx<0)idx=s.slots.length-1;s.slots.splice(idx,1)}});
+  const usedProg=new Set(),missing=new Set();
+  sess.forEach((s,si)=>{
+    const used=new Set(),cnt={},out=[];
+    s.slots.forEach(sl=>{
+      const no=cnt[sl.m]||0;cnt[sl.m]=no+1;
+      let c=EX.filter(e=>e.p[0]===sl.m&&!used.has(e.id)&&e.eq.every(t=>t==='bw'||eq.includes(t)));
+      if(!c.length){missing.add(sl.m);return}
+      const fresh=c.filter(e=>!usedProg.has(e.id));if(fresh.length)c=fresh;
+      const comp=c.filter(e=>e.c),iso=c.filter(e=>!e.c);
+      const pool=no===0?(comp.length?comp:c):(iso.length?iso:c);
+      const e=pool[(si+G.seed+no)%pool.length];
+      used.add(e.id);usedProg.add(e.id);out.push(e);
+    });
+    out.sort((a,b)=>(b.c?1:0)-(a.c?1:0));
+    s.ex=out;
+  });
+  return {sess,missing:[...missing]};
+}
+function genModal(){
+  const sc=$('#sheet')?$('#sheet').scrollTop:0;
+  const ch=(on,act,v,t)=>`<div class="chip ${on?'on':''}" data-act="${act}" data-v="${v}">${t}</div>`;
+  modal(`<div class="row"><h1 class="sp" style="margin:0">⚒️ Forge – prógramm</h1><button class="sm" data-act="mclose2">Loka</button></div>
+  <h2>Hvar æfirðu?</h2><div class="chips">${ch(G.place==='gym','gPlace','gym','🏋️ Í ræktinni')}${ch(G.place==='home','gPlace','home','🏠 Heima')}</div>
+  <h2>Hvaða áhöld hefurðu?</h2><div class="chips">${EQ.map(e=>ch(G.eq.includes(e[0]),'gEq',e[0],e[1])).join('')}</div><div class="mut">Líkamsþyngd er alltaf með.</div>
+  <h2>Dagar í viku</h2><div class="chips">${[2,3,4,5,6].map(d=>ch(G.days===d,'gDays',d,d)).join('')}</div>
+  <h2>Hvað viltu leggja áherslu á?</h2><div class="chips">${ch(!G.focus.length,'gFocus','all','⭐ Allir vöðvahópar (mælt með)')}${Object.keys(MU).map(m=>ch(G.focus.includes(m),'gFocus',m,MU[m])).join('')}</div><div class="mut">Veldu einn eða fleiri vöðvahópa til að fá meiri áherslu á þá.</div>
+  <button class="ok full" data-act="gMake" style="padding:14px;margin-top:14px">⚒️ Forge prógrammið</button>`);
+  $('#sheet').scrollTop=sc;
+}
+function genPreview(){
+  GEN=generate();
+  modal(`<div class="row"><h1 class="sp" style="margin:0">Prógrammið þitt</h1><button class="sm" data-act="mclose2">Loka</button></div>
+  <div class="mut" style="margin-top:4px">${G.days} dagar í viku · ${G.place==='gym'?'Ræktin':'Heima'}${G.focus.length?' · áhersla: '+G.focus.map(m=>MU[m]).join(', '):''}</div>
+  ${GEN.missing.length?`<div class="card" style="border-color:var(--warn)">Vantar áhöld fyrir: ${GEN.missing.map(m=>MU[m]).join(', ')}. Farðu til baka og bættu við áhöldum, eða vistaðu eins og það er.</div>`:''}
+  ${GEN.sess.map((s,i)=>`<div class="card"><b>${DAYS[G.days][i]} – ${s.name}</b>${s.ex.map(e=>`<div class="li"><div class="thumb" style="width:44px">${body(e.p,e.s)}</div><div class="sp">${esc(e.name)}<div class="mus">${MU[e.p[0]]}</div></div></div>`).join('')}</div>`).join('')}
+  <div class="row"><button class="sp" data-act="gBack">← Breyta</button><button class="sp" data-act="gShuffle">🔀 Stokka</button></div>
+  <button class="ok full" data-act="gSave" style="padding:14px;margin-top:10px">Vista prógramm</button>`);
+}
+function genSave(){
+  const prog=uid(),pn=`Prógramm · ${G.days} dagar${G.focus.length?' · '+G.focus.map(m=>MU[m]).join(', '):''}`;
+  GEN.sess.forEach((s,i)=>{if(s.ex.length)S.plans.push({id:uid(),name:`${DAYS[G.days][i]} – ${s.name}`,ex:s.ex.map(e=>e.id),prog,progName:pn})});
+  save();closeM();tab='plans';render();toast('Prógramm vistað ✓');
+}
+
+/* ---- Tímaæfing ---- */
+const TPRE=[
+  {name:'Kviður og bak',work:30,rest:15,rounds:2,g:[{f:['crunch','lyingraise','deadbug','mountain','plank','sideplank','bicycle','flutter','russian','hollow'],n:4},{f:['superman','birddog','reversesnow'],n:2}]},
+  {name:'Fætur',work:40,rest:20,rounds:3,g:[{f:['bodysquat','bwlunge','jumpsquat','bulgarian','sumo','sidelunge','stepup','wallsit'],n:2},{f:['bridge','sbridge','donkey','sglrdl','slidecurl'],n:2},{f:['bwcalf'],n:1}]},
+  {name:'Allur líkaminn',work:40,rest:20,rounds:3,g:[{f:['pushup','widepush','declpush','pike','diamond'],n:2},{f:['superman','birddog','reversesnow'],n:1},{f:['bodysquat','bwlunge','jumpsquat','sumo','bulgarian'],n:2},{f:['burpee','jacks','highknees','mountain'],n:1}]},
+  {name:'Efri hluti',work:40,rest:20,rounds:3,g:[{f:['pushup','widepush','declpush','pike','diamond','benchdip'],n:3},{f:['superman','birddog','reversesnow'],n:2}]}
+];
+const tPick=(a,n)=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,n)};
+function tRoll(i){
+  const p=TPRE[i];S.tlast=S.tlast||{};const last=S.tlast[p.name]||'';let ex,k=0;
+  do{ex=tPick([].concat(...p.g.map(g=>tPick(g.f,g.n))),99);k++}while(ex.slice().sort().join()===last&&k<10);
+  S.tlast[p.name]=ex.slice().sort().join();return ex;
+}
+const tStepper=(k,l,u,st)=>`<div class="row" style="padding:6px 0"><span class="sp">${l}</span><button style="padding:10px 18px" data-act="tAdj" data-v="${k}:-${st}">−</button><b style="min-width:70px;text-align:center">${S.tcfg[k]}${u?' '+u:''}</b><button style="padding:10px 18px" data-act="tAdj" data-v="${k}:${st}">+</button></div>`;
+function vTimed(){
+  const c=S.tcfg,n=c.ex.length,tot=n?Math.max(0,(c.work+c.rest)*n*c.rounds-c.rest):0;
+  const rec=(S.tworkouts||[]).slice(-5).reverse();
+  return `<h1>Tímaæfing</h1><p class="mut">Klukka segir þér hvað þú átt að gera og í hvað langan tíma.</p>
+  <h2 style="margin-top:8px">Tilbúnir hringir</h2><div class="chips">${TPRE.map((p,i)=>`<div class="chip" data-act="tPre" data-v="${i}">${p.name}</div>`).join('')}</div>
+  <div class="card"><b>Æfingar í hring</b>${n?c.ex.map((id,i)=>{const ex=getEx(id);return `<div class="li"><div class="thumb" style="width:44px">${body(ex.p,ex.s)}</div><span class="sp">${esc(ex.name)}</span><button class="sm dng" data-act="tDel" data-v="${i}">✕</button></div>`}).join(''):'<div class="mut" style="margin:8px 0">Veldu tilbúinn hring hér að ofan eða bættu við æfingum.</div>'}${c.pre!==undefined?'<button class="full pri" data-act="tShuf" style="margin-top:8px">🔀 Stokka æfingar aftur</button>':''}<button class="full" data-act="tAdd" style="margin-top:8px">+ Bæta við æfingu</button></div>
+  <div class="card">${tStepper('work','Vinna','sek',5)}${tStepper('rest','Hvíld','sek',5)}${tStepper('rounds','Hringir','',1)}</div>
+  <div class="card row"><span class="sp">Heildartími</span><b>${fmtT(tot)}</b></div>
+  <button class="ok full" data-act="tStart" style="padding:16px;font-size:18px" ${n?'':'disabled'}>🔥 Beast mode – byrja</button>
+  ${rec.length?'<h2>Síðustu tímaæfingar</h2>'+rec.map(t=>`<div class="card row"><div class="sp"><b>${esc(t.name)}</b><div class="mus">${fmtD(t.date)} · ${t.dur} mín · ${t.rounds} hringir · +${t.xp} XP</div></div><button class="sm dng" data-act="tDelW" data-v="${t.id}">✕</button></div>`).join(''):''}`;
+}
+let TR=null,tTick=null,wake=null;
+function beep2(f,d){try{beepCtx=beepCtx||new (window.AudioContext||window.webkitAudioContext)();if(beepCtx.state==='suspended')beepCtx.resume();const o=beepCtx.createOscillator(),g=beepCtx.createGain();o.connect(g);g.connect(beepCtx.destination);o.frequency.value=f;g.gain.value=.25;o.start();o.stop(beepCtx.currentTime+d)}catch(e){}}
+function buzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function tSteps(){
+  const c=S.tcfg,st=[{t:'prep',dur:5}];
+  for(let r=1;r<=c.rounds;r++)c.ex.forEach((id,k)=>{
+    st.push({t:'work',ex:id,dur:c.work,r});
+    const last=r===c.rounds&&k===c.ex.length-1;
+    if(!last&&c.rest>0)st.push({t:'rest',dur:c.rest,r});
+  });
+  return st;
+}
+function tNextWork(i){for(let j=i+1;j<TR.steps.length;j++)if(TR.steps[j].t==='work')return TR.steps[j];return null}
+function tStart(){
+  const steps=tSteps();let cum=[],t=0;steps.forEach(s=>{cum.push(t);t+=s.dur});
+  TR={steps,cum,total:t,i:0,paused:false,start:Date.now(),name:S.tcfg.name||'Tímaæfing',lastSec:-1,end:Date.now()+steps[0].dur*1000};
+  try{beepCtx=beepCtx||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}
+  try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>{wake=w}).catch(()=>{})}catch(e){}
+  const el=document.createElement('div');el.id='trun';document.body.appendChild(el);
+  paintRun();clearInterval(tTick);tTick=setInterval(tickRun,250);
+}
+function paintRun(){
+  const st=TR.steps[TR.i],el=$('#trun'),nx=tNextWork(TR.i),ex=st.ex?getEx(st.ex):(nx?getEx(nx.ex):null);
+  const cfg={prep:['UNDIRBÚNINGUR','#374151'],work:['VINNA','#1d4ed8'],rest:['HVÍLD','#92400e']}[st.t];
+  el.style.background=cfg[1];
+  el.innerHTML=`<div class="tl">${cfg[0]}</div><div class="tt" id="ttime"></div>
+  ${ex?`<div class="tn">${st.t==='work'?'':'Næst: '}${esc(ex.name)}</div><div class="tb">${body(ex.p,ex.s)}</div>`:''}
+  <div style="opacity:.8">${st.r?'Hringur '+st.r+' af '+S.tcfg.rounds:'Gerðu þig tilbúinn'}${st.t==='work'&&nx?' · Næst: '+esc(getEx(nx.ex).name):''}</div>
+  <div class="tprog"><i id="tpg"></i></div>
+  <div class="row" style="width:100%;gap:10px"><button class="sp" data-act="tPause">⏸ Hlé</button><button class="sp" data-act="tSkip">Sleppa ⏭</button><button class="sp dng" data-act="tQuit">Hætta</button></div>`;
+  el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
+  tickRun();
+}
+function tickRun(){
+  if(!TR)return;
+  const st=TR.steps[TR.i];
+  const left=TR.paused?TR.left:Math.ceil((TR.end-Date.now())/1000);
+  if(!TR.paused&&left<=0){tNext(true);return}
+  if(!TR.paused&&left<=3&&TR.lastSec!==left){TR.lastSec=left;beep2(660,.12)}
+  const tt=$('#ttime'),pg=$('#tpg');if(!tt)return;
+  tt.textContent=fmtT(Math.max(0,left));
+  pg.style.width=Math.min(100,(TR.cum[TR.i]+st.dur-left)/TR.total*100)+'%';
+}
+function tNext(auto){
+  TR.i++;TR.lastSec=-1;
+  if(TR.i>=TR.steps.length){tFinish();return}
+  TR.end=Date.now()+TR.steps[TR.i].dur*1000;TR.paused=false;
+  if(auto){beep2(TR.steps[TR.i].t==='work'?988:523,.35);buzz([200,100,200])}
+  paintRun();
+}
+function tPause(){
+  if(!TR)return;
+  if(!TR.paused){TR.left=Math.ceil((TR.end-Date.now())/1000);TR.paused=true}else{TR.end=Date.now()+TR.left*1000;TR.paused=false}
+  const b=document.querySelector('#trun [data-act=tPause]');if(b)b.textContent=TR.paused?'▶ Áfram':'⏸ Hlé';
+}
+function tStop(){clearInterval(tTick);tTick=null;TR=null;const el=$('#trun');if(el)el.remove();try{wake&&wake.release();wake=null}catch(e){}}
+function tFinish(){
+  const c=S.tcfg,xp=Math.round(c.work*c.ex.length*c.rounds/6),mins=Math.max(1,Math.round((Date.now()-TR.start)/60000));
+  S.tworkouts.push({id:uid(),date:Date.now(),name:TR.name,dur:mins,rounds:c.rounds,ex:c.ex.slice(),xp});save();
+  tStop();beep2(988,.5);buzz([300,100,300,100,300]);render();
+  modal(`<div style="text-align:center"><div class="big">🔥 Beast mode búið!</div><div style="font-weight:700;color:var(--ac2);margin:2px 0 6px">Locked in ✅</div><p>${mins} mín · +${xp} Aura</p><button class="pri full" data-act="mclose2">Áfram</button></div>`);
+}
+
+const TIERS=[['Járn',0,'#8b95a7'],['Brons',.35,'#cd7f32'],['Silfur',.65,'#c9d1de'],['Gull',1,'#f2c14e'],['Platína',1.3,'#4fd1c5'],['Demantur',1.6,'#6cb4ff'],['Beast',2,'#c084fc']];
+const def=()=>({name:'',bw:70,custom:[],plans:[],workouts:[],active:null,rest:90,autoRest:true,tworkouts:[],tcfg:{ex:[],work:40,rest:20,rounds:3}});
+let S=load(),tab='train',pgEx=null;
+function load(){try{const j=localStorage.getItem(KEY);if(j)return Object.assign(def(),JSON.parse(j))}catch(e){}return def()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const allEx=()=>EX.concat(S.custom);
+const getEx=id=>Object.assign({p:[],s:[],eq:['bw']},allEx().find(e=>e.id===id)||{id,name:id,grp:'Annað',g:1,bw:false});
+const fmtD=t=>new Date(t).toLocaleDateString('is-IS',{day:'numeric',month:'short'});
+const num=v=>{const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?0:n};
+const r1=n=>Math.round(n*10)/10;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('s'),2200)}
+
+/* ---- Útreikningar ---- */
+const effW=(ex,w)=>ex.bw?S.bw+w:w;
+const e1rm=(ex,w,r)=>{const e=effW(ex,w);return r<=1?e:e*(1+Math.min(r,30)/30)};
+const valid=(ex,s)=>s.r>0&&(s.w>0||ex.bw||(ex.eq||[]).includes('band'));
+const score=(ex,e)=>e/S.bw/ex.g;
+function tierOf(sc){let i=0;TIERS.forEach((t,k)=>{if(sc>=t[1])i=k});return i}
+function badge(i){const t=TIERS[i];return `<span class="badge" style="color:${t[2]};border-color:${t[2]}55;background:${t[2]}18">${t[0]}</span>`}
+const setXp=(ex,s)=>Math.round(effW(ex,s.w)*s.r/10)+5;
+function totalXp(){let x=0;S.workouts.forEach(w=>w.items.forEach(it=>{const ex=getEx(it.ex);it.sets.forEach(s=>{if(s.done&&valid(ex,s))x+=setXp(ex,s)})}));return x+(S.tworkouts||[]).reduce((a,t)=>a+t.xp,0)}
+const lvlOf=x=>Math.floor(Math.sqrt(x/40))+1;
+function bestE(exId,ws){let b=0;const ex=getEx(exId);(ws||S.workouts).forEach(w=>w.items.forEach(it=>{if(it.ex!==exId)return;it.sets.forEach(s=>{if(s.done&&valid(ex,s))b=Math.max(b,e1rm(ex,s.w,s.r))})}));return b}
+function lastSets(exId){for(let i=S.workouts.length-1;i>=0;i--){const it=S.workouts[i].items.find(x=>x.ex===exId);if(it&&it.sets.length)return it.sets}return null}
+function exScores(){const out=[];const ids=new Set();S.workouts.forEach(w=>w.items.forEach(i=>ids.add(i.ex)));ids.forEach(id=>{const ex=getEx(id),b=bestE(id);if(b>0)out.push({ex,e:b,sc:score(ex,b)})});return out.sort((a,b)=>b.sc-a.sc)}
+function overall(){const l=exScores().slice(0,5);if(!l.length)return null;return l.reduce((a,x)=>a+x.sc,0)/l.length}
+
+/* ---- Viðmót ---- */
+const ICONS={timed:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 3h6"/>',train:'<path d="M6 6v12M18 6v12M3 9v6M21 9v6M6 12h12"/>',plans:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6M9 11h6M9 15h4"/>',prog:'<path d="M4 19V5M4 19h16M8 15l4-5 3 3 5-7"/>',rank:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/>',me:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>'};
+const NAMES={train:'Æfing',timed:'Tími',plans:'Áætlanir',prog:'Gains',rank:'Rank',me:'Ég'};
+function render(){
+  $('#nav').innerHTML=Object.keys(NAMES).map(k=>`<button class="${tab===k?'on':''}" data-act="tab" data-v="${k}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg>${NAMES[k]}</button>`).join('');
+  const v={train:vTrain,timed:vTimed,plans:vPlans,prog:vProg,rank:vRank,me:vMe}[tab];
+  $('#app').innerHTML=header()+v();
+  $('#app').style.paddingBottom=(S.active&&tab==='train')?'calc(170px + env(safe-area-inset-bottom))':'';
+  lastMode='';drawRest();
+}
+function header(){const x=totalXp(),l=lvlOf(x),a=40*(l-1)*(l-1),b=40*l*l,p=Math.min(100,(x-a)/(b-a)*100);
+  return `<div class="hdr"><div class="lvl">${l}</div><div class="sp"><div class="row"><b>${esc(S.name||'Lyftari')}</b><span class="sp"></span><span class="mut">${x} Aura-stig</span></div><div class="bar" style="margin-top:6px"><i style="width:${p}%"></i></div></div></div>`}
+
+function vTrain(){
+  const a=S.active;
+  if(!a){
+    const recent=S.workouts.slice(-6).reverse();
+    return `<h1>Æfing</h1><p class="mut">Lock in, safnaðu Aura-stigum og klifraðu upp í rank.</p>
+    <button class="pri full" data-act="startEmpty" style="padding:14px">🔒 Lock in – byrja æfingu</button>
+    ${S.plans.length?'<h2>Úr áætlun</h2>'+S.plans.map(p=>`<div class="card row"><div class="sp"><b>${esc(p.name)}</b><div class="mut">${p.ex.length} æfingar</div></div><button class="sm pri" data-act="startPlan" data-v="${p.id}">Byrja</button></div>`).join(''):''}
+    <h2>Síðustu æfingar</h2>${recent.length?recent.map(wCard).join(''):'<div class="card mut">Engar æfingar skráðar enn.</div>'}`;
+  }
+  const mins=Math.floor((Date.now()-a.start)/60000);
+  return `<div class="row"><h1 class="sp">${esc(a.name||'Æfing')}</h1><span class="mut">${mins} mín</span></div>
+  ${a.items.map((it,i)=>{const ex=getEx(it.ex),prev=lastSets(it.ex)||[];
+    return `<div class="card"><div class="row">${thumb(ex)}<div class="sp"><b>${esc(ex.name)}</b><div class="mus">${muscTxt(ex)}</div>${it.note?`<div class="mus" style="color:#7fb0ff">${esc(it.note)}</div>`:''}${ex.bw?'<div class="mus">líkamsþyngd + auka kg</div>':''}</div><button class="sm dng" data-act="delItem" data-i="${i}">✕</button></div>
+    <div class="sets"><div class="h">SETT</div><div class="h">SÍÐAST</div><div class="h">KG</div><div class="h">ENDUR</div><div class="h"></div>
+    ${it.sets.map((s,j)=>{const p=prev[j];return `<div class="n">${j+1}</div><div class="pv">${p?r1(p.w)+'×'+p.r:'–'}</div>
+      <input type="number" inputmode="decimal" step="any" data-i="${i}" data-s="${j}" data-f="w" value="${s.w||''}" placeholder="${p?r1(p.w):'0'}" ${s.done?'class="done"':''}>
+      <input type="number" inputmode="numeric" data-i="${i}" data-s="${j}" data-f="r" value="${s.r||''}" placeholder="${p?p.r:'0'}">
+      <button class="chk ${s.done?'d':''}" data-act="chk" data-i="${i}" data-s="${j}">✓</button>`}).join('')}</div>
+    <div class="row" style="margin-top:8px"><button class="sm" data-act="addSet" data-i="${i}">+ Bæta við setti</button>${it.sets.length>1?`<button class="sm" data-act="delSet" data-i="${i}">− Eyða síðasta</button>`:''}</div></div>`}).join('')}
+  <button class="full" data-act="pickEx" data-v="active">+ Bæta við æfingu</button>
+  <div class="row" style="margin-top:14px"><button class="dng" data-act="cancelW">Hætta við</button><button class="ok sp" data-act="finishW" style="padding:14px">Ljúka æfingu</button></div>`;
+}
+function wCard(w){
+  let sets=0,vol=0;w.items.forEach(it=>{const ex=getEx(it.ex);it.sets.forEach(s=>{if(s.done){sets++;vol+=effW(ex,s.w)*s.r}})});
+  return `<div class="card"><div class="row"><b class="sp">${esc(w.name||'Æfing')}</b><span class="mut">${fmtD(w.date)}</span><button class="sm dng" data-act="delW" data-v="${w.id}">✕</button></div>
+  <div class="mut" style="margin:4px 0 6px">${sets} sett · ${Math.round(vol)} kg rúmmál · ${w.dur||0} mín</div><div class="tags">${w.items.map(i=>`<span class="tag">${esc(getEx(i.ex).name)}</span>`).join('')}</div></div>`}
+
+function vPlans(){
+  const planCard=p=>{const ps=[...new Set(p.ex.flatMap(id=>getEx(id).p))];
+    return `<div class="card"><div class="row"><div class="thumb" style="width:56px">${body(ps,[])}</div><div class="sp"><b>${esc(p.name)}</b><div class="mus">${p.ex.length} æfingar</div></div><button class="sm pri" data-act="startPlan" data-v="${p.id}">Byrja</button><button class="sm dng" data-act="delPlan" data-v="${p.id}">✕</button></div><div class="tags" style="margin-top:8px">${p.ex.map(id=>`<span class="tag">${esc(getEx(id).name)}</span>`).join('')}</div></div>`};
+  const progs=[];S.plans.forEach(p=>{if(p.prog&&!progs.includes(p.prog))progs.push(p.prog)});
+  const own=S.plans.filter(p=>!p.prog);
+  return `<h1>Æfingaáætlanir</h1><p class="mut">Láttu appið búa til prógramm, eða settu saman þína eigin áætlun.</p>
+  ${S.active?`<div class="card row" style="border-color:var(--ac)"><div class="sp"><b>Æfing í gangi</b><div class="mus">${esc(S.active.name||'Æfing')}</div></div><button class="sm pri" data-act="tab" data-v="train">Opna</button></div>`:''}
+  <button class="ok full" data-act="genOpen" style="padding:14px">⚒️ Forge: búa til prógramm fyrir mig</button>
+  <button class="full" data-act="newPlan" style="margin-top:8px">+ Ný áætlun handvirkt</button>
+  ${progs.map(g=>{const l=S.plans.filter(p=>p.prog===g);return `<div class="row" style="margin-top:18px"><h2 class="sp" style="margin:0">${esc(l[0].progName||'Prógramm')}</h2><button class="sm dng" data-act="delProg" data-v="${g}">Eyða</button></div>`+l.map(planCard).join('')}).join('')}
+  ${own.length?'<h2>Mínar áætlanir</h2>'+own.map(planCard).join(''):''}`;
+}
+function vProg(){
+  const ids=[...new Set(S.workouts.flatMap(w=>w.items.map(i=>i.ex)))].filter(id=>bestE(id)>0);
+  const now=Date.now(),wk=7*864e5;let cnt=[];for(let k=7;k>=0;k--){cnt.push(S.workouts.concat(S.tworkouts||[]).filter(w=>w.date>now-(k+1)*wk&&w.date<=now-k*wk).length)}
+  const mx=Math.max(1,...cnt);
+  const wkChart=`<svg class="ch" viewBox="0 0 320 110">${cnt.map((c,i)=>`<rect x="${i*40+8}" y="${90-c/mx*70}" width="24" height="${c/mx*70}" rx="5" fill="#3d8bff"/><text x="${i*40+20}" y="${84-c/mx*70}" fill="#eef2f8" font-size="11" text-anchor="middle">${c||''}</text><text x="${i*40+20}" y="106" fill="#8a96ab" font-size="10" text-anchor="middle">${i===7?'nú':'-'+(7-i)+'v'}</text>`).join('')}</svg>`;
+  let h=`<h1>Gains 📈</h1><div class="grid2"><div class="stat"><b>${S.workouts.length+(S.tworkouts||[]).length}</b><span class="mut">æfingar alls</span></div><div class="stat"><b>${cnt[7]+cnt[6]}</b><span class="mut">síðustu 2 vikur</span></div></div>
+  <div class="card"><b>Grind á viku</b>${wkChart}</div>`;
+  if(!ids.length)return h+'<div class="card mut">Ljúktu við æfingu til að sjá þróun á styrk.</div>';
+  if(!pgEx||!ids.includes(pgEx))pgEx=ids[0];
+  const ex=getEx(pgEx);const pts=[];S.workouts.forEach(w=>{const b=bestE(pgEx,[w]);if(b>0)pts.push({d:w.date,v:b})});
+  const lo=Math.min(...pts.map(p=>p.v)),hi=Math.max(...pts.map(p=>p.v)),sp=Math.max(1,hi-lo);
+  const X=i=>pts.length===1?160:20+i*(280/(pts.length-1)),Y=v=>120-(v-lo)/sp*90;
+  h+=`<div class="card"><select data-act="pgEx">${ids.map(id=>`<option value="${id}" ${id===pgEx?'selected':''}>${esc(getEx(id).name)}</option>`).join('')}</select>
+  <div class="mut" style="margin:8px 0 0">Gains: áætlað 1RM (hámarksþyngd í eina endurtekningu)</div>
+  <svg class="ch" viewBox="0 0 320 150"><polyline fill="none" stroke="#3d8bff" stroke-width="2.5" points="${pts.map((p,i)=>X(i)+','+Y(p.v)).join(' ')}"/>
+  ${pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p.v)}" r="4" fill="#3d8bff"/><text x="${X(i)}" y="${Y(p.v)-9}" fill="#eef2f8" font-size="10" text-anchor="middle">${Math.round(p.v)}</text><text x="${X(i)}" y="144" fill="#8a96ab" font-size="9" text-anchor="middle">${fmtD(p.d)}</text>`).join('')}</svg>
+  <div class="row"><span class="mut sp">Besta: <b style="color:var(--tx)">${r1(hi)} kg</b></span>${badge(tierOf(score(ex,hi)))}</div></div>`;
+  return h;
+}
+function vRank(){
+  const o=overall(),l=exScores();
+  if(!l.length)return `<h1>Rank</h1><div class="card mut">Skráðu æfingar til að fá rank. Aura-stigin reiknast út frá styrk miðað við líkamsþyngd (${S.bw} kg – breyta í „Ég“).</div>`;
+  const ti=tierOf(o),nx=TIERS[ti+1];
+  const p=nx?Math.min(100,(o-TIERS[ti][1])/(nx[1]-TIERS[ti][1])*100):100;
+  return `<h1>Rank</h1><div class="card" style="text-align:center"><div class="mut">Heildarstyrkur</div><div class="big" style="color:${TIERS[ti][2]}">${TIERS[ti][0]}</div><div class="mut">${Math.round(o*100)} Aura-stig${nx?' · '+Math.round(nx[1]*100)+' í '+nx[0]:''}</div><div class="bar" style="margin-top:10px"><i style="width:${p}%;background:${TIERS[ti][2]}"></i></div></div>
+  <h2>Æfingar</h2>${l.map(x=>{const i=tierOf(x.sc),n=TIERS[i+1],pp=n?Math.min(100,(x.sc-TIERS[i][1])/(n[1]-TIERS[i][1])*100):100;
+    return `<div class="card"><div class="row"><b class="sp">${esc(x.ex.name)}</b>${badge(i)}</div><div class="mut" style="margin:4px 0 8px">1RM ~${Math.round(x.e)} kg · ${Math.round(x.sc*100)} Aura-stig</div><div class="bar"><i style="width:${pp}%;background:${TIERS[i][2]}"></i></div></div>`}).join('')}
+  <p class="mut">Rank miðast við áætlað 1RM (Epley) deilt með líkamsþyngd. Heildarstyrkur er meðaltal fimm bestu æfinganna.</p>`;
+}
+function vMe(){
+  return `<h1>Ég</h1><div class="card"><label class="mut">Nafn</label><input data-act="setName" value="${esc(S.name)}" placeholder="Nafn">
+  <label class="mut" style="display:block;margin-top:10px">Líkamsþyngd (kg)</label><input type="number" inputmode="decimal" data-act="setBw" value="${S.bw}"><div class="mut" style="margin-top:6px">Notað til að reikna rank, líkamsþyngdaræfingar og stinga upp á byrjunarþyngdum.</div></div>
+  <div class="card"><label class="li" style="border:0;padding:0"><input type="checkbox" data-act="autoRest" ${S.autoRest?'checked':''}><span>Ræsa hvíldartíma sjálfkrafa þegar ég haka við sett</span></label></div>
+  <div class="card"><b>Mínar æfingar</b><div class="mut" style="margin:4px 0 8px">Bættu við æfingu sem vantar í listann.</div><button class="full" data-act="newEx">+ Ný æfing</button>${S.custom.map(e=>`<div class="li"><span class="sp">${esc(e.name)}</span><button class="sm dng" data-act="delEx" data-v="${e.id}">✕</button></div>`).join('')}</div>
+  <div class="card"><b>Afrit</b><div class="mut" style="margin:4px 0 8px">Gögnin vistast í þessum vafra. Afritaðu textann og geymdu hann ef þú vilt flytja yfir í annan síma.</div>
+  <textarea id="bk" rows="4" placeholder="Límdu afrit hér til að hlaða inn"></textarea>
+  <div class="row" style="margin-top:8px"><button class="sp" data-act="bkCopy">Afrita gögn</button><button class="sp" data-act="bkLoad">Hlaða inn</button></div></div>`;
+}
+
+/* ---- Gluggar ---- */
+function modal(html){$('#modal').innerHTML=`<div class="modal" data-act="mclose"><div class="sheet" id="sheet">${html}</div></div>`}
+function closeM(){$('#modal').innerHTML=''}
+let pickMode=null,pickSel=[];
+function exPicker(mode){
+  pickMode=mode;pickSel=[];
+  const groups=[...new Set(allEx().map(e=>e.grp))];
+  modal(`<div class="row"><h1 class="sp" style="margin:0">Veldu æfingar</h1><button class="sm" data-act="mclose2">Loka</button></div>
+  <input id="q" placeholder="Leita…" style="margin:10px 0">
+  <div id="plist"></div><button class="pri full" data-act="pickDone" style="margin-top:10px">Bæta við</button>`);
+  drawPick('');
+}
+function drawPick(q){
+  q=q.toLowerCase();const groups=[...new Set(allEx().map(e=>e.grp))];
+  $('#plist').innerHTML=groups.map(g=>{const l=allEx().filter(e=>e.grp===g&&(e.name.toLowerCase().includes(q)||(MU[(e.p||[])[0]]||'').toLowerCase().includes(q)));
+    return l.length?`<div class="mut" style="margin-top:10px">${g}</div>`+l.map(e=>`<label class="li"><input type="checkbox" data-pick="${e.id}" ${pickSel.includes(e.id)?'checked':''}><div class="thumb" style="width:48px">${body(e.p||[],e.s||[])}</div><span class="sp">${esc(e.name)}<div class="mus">${MU[(e.p||[])[0]]||''}</div></span></label>`).join(''):''}).join('');
+}
+function newPlanModal(){
+  pickMode='plan';pickSel=[];
+  modal(`<div class="row"><h1 class="sp" style="margin:0">Ný áætlun</h1><button class="sm" data-act="mclose2">Loka</button></div>
+  <input id="pn" placeholder="Nafn, t.d. Brjóst og þríhöfði" style="margin:10px 0"><input id="q" placeholder="Leita að æfingu…" style="margin-bottom:6px"><div id="plist"></div>
+  <button class="pri full" data-act="planSave" style="margin-top:10px">Vista áætlun</button>`);
+  drawPick('');
+}
+function newExModal(){
+  modal(`<div class="row"><h1 class="sp" style="margin:0">Ný æfing</h1><button class="sm" data-act="mclose2">Loka</button></div>
+  <input id="xn" placeholder="Nafn æfingar" style="margin:10px 0"><div class="mut">Hvaða vöðva æfir hún mest?</div><select id="xg">${Object.keys(MU).map(m=>`<option value="${m}">${MU[m]}</option>`).join('')}</select>
+  <label class="li"><input type="checkbox" id="xb"><span>Líkamsþyngdaræfing (t.d. upphífingar)</span></label>
+  <button class="pri full" data-act="exSave">Vista</button>`);
+}
+
+/* ---- Æfing: aðgerðir ---- */
+function recFor(ex){
+  let n,r;
+  if(ex.p[0]==='abs'||ex.p[0]==='calves'){n=3;r=15}
+  else if(ex.c){n=ex.bw?3:4;r=ex.bw?(ex.eq.includes('bar')?8:10):8}
+  else{n=3;r=12}
+  const band=ex.eq.includes('band'),step=ex.eq.includes('db')?1:2.5;let w=0;
+  if(!ex.bw&&!band){w=S.bw*ex.g*0.45/(1+r/30);w=Math.max(step,Math.round(w/step)*step)}
+  return {n,r,w,step,fixed:ex.bw||band};
+}
+function mkItem(id){
+  const ex=getEx(id),rec=recFor(ex),p=lastSets(id);
+  if(p){
+    let up=false;
+    if(!rec.fixed&&p.length>=rec.n-1&&p.every(x=>x.r>=rec.r))up=true;
+    return {ex:id,note:up?'Þyngt um '+rec.step+' kg – þú kláraðir allt síðast':'',sets:p.map(x=>({w:up?r1(x.w+rec.step):x.w,r:x.r,done:false}))};
+  }
+  return {ex:id,note:'Tillaga: '+rec.n+'×'+rec.r+(rec.fixed?'':' · '+rec.w+' kg')+' – breyttu ef þarf',sets:Array.from({length:rec.n},()=>({w:rec.w,r:rec.r,done:false}))};
+}
+function startW(name,ids){S.active={name,start:Date.now(),items:ids.map(mkItem)};save();tab='train';render()}
+function finishW(){
+  const a=S.active,items=[];
+  a.items.forEach(it=>{const ex=getEx(it.ex);const sets=it.sets.filter(s=>s.done&&valid(ex,s));if(sets.length)items.push({ex:it.ex,sets})});
+  if(!items.length){toast('Hakaðu við að minnsta kosti eitt sett ✓');return}
+  const w={id:uid(),name:a.name,date:Date.now(),dur:Math.max(1,Math.round((Date.now()-a.start)/60000)),items};
+  const prs=[];let xp=0,sets=0;
+  items.forEach(it=>{const ex=getEx(it.ex),before=bestE(it.ex),now=bestE(it.ex,[w]);if(before>0&&now>before)prs.push(ex.name);it.sets.forEach(s=>{xp+=setXp(ex,s);sets++})});
+  const lvB=lvlOf(totalXp());S.workouts.push(w);S.active=null;RT=null;save();
+  const lvA=lvlOf(totalXp());tab='train';render();
+  modal(`<div style="text-align:center"><div class="big">💪 Grind lokið!</div><div style="font-weight:700;color:var(--ac2);margin:2px 0 6px">Locked in ✅</div><p>${sets} sett · +${xp} Aura</p>${lvA>lvB?`<p><b>Nýtt level: ${lvA}!</b></p>`:''}${prs.length?`<div class="card"><b>Ný met 🏆</b><div class="mut" style="margin-top:4px">${prs.map(esc).join(', ')}</div></div>`:''}<button class="pri full" data-act="mclose2">Áfram</button></div>`);
+}
+
+/* ---- Atburðir ---- */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');if(!t)return;
+  const act=t.dataset.act,v=t.dataset.v,i=+t.dataset.i,j=+t.dataset.s;
+  if(act==='mclose'){if(e.target===t)closeM();return}
+  if(t.tagName==='SELECT'||t.tagName==='INPUT'||t.tagName==='TEXTAREA')return;
+  if(act==='tab'){tab=v;render();window.scrollTo(0,0)}
+  else if(act==='mclose2')closeM();
+  else if(act==='startEmpty')startW('Æfing',[]);
+  else if(act==='startPlan'){const p=S.plans.find(x=>x.id===v);if(S.active){ask('Þú ert með æfingu í gangi. Hætta við hana og byrja þessa?',()=>startW(p.name,p.ex),'Já, byrja nýja');return}startW(p.name,p.ex)}
+  else if(act==='pickEx')exPicker('active');
+  else if(act==='pickDone'){if(pickMode==='timed'){pickSel.forEach(id=>S.tcfg.ex.push(id));delete S.tcfg.pre}else if(S.active)pickSel.forEach(id=>S.active.items.push(mkItem(id)));save();closeM();render()}
+  else if(act==='delItem'){S.active.items.splice(i,1);save();render()}
+  else if(act==='addSet'){const s=S.active.items[i].sets,l=s[s.length-1]||{w:0,r:0};s.push({w:l.w,r:l.r,done:false});save();render()}
+  else if(act==='delSet'){S.active.items[i].sets.pop();save();render()}
+  else if(act==='chk'){
+    const it=S.active.items[i],s=it.sets[j],ex=getEx(it.ex);
+    if(!s.done){
+      if(!s.w&&!s.r){const p=(lastSets(it.ex)||[])[j];if(p){s.w=p.w;s.r=p.r}}
+      if(!valid(ex,s)){toast('Settu inn endurtekningar'+(ex.bw?'':' og kg'));render();return}
+      const before=Math.max(bestE(it.ex),...it.sets.filter((x,k)=>k!==j&&x.done&&valid(ex,x)).map(x=>e1rm(ex,x.w,x.r)),0);
+      s.done=true;const e=e1rm(ex,s.w,s.r);
+      toast(before>0&&e>before?'🏆 Nýtt met! +'+setXp(ex,s)+' Aura':'+'+setXp(ex,s)+' Aura');
+    }else s.done=false;
+    save();render();if(s.done&&S.autoRest)startRest();
+  }
+  else if(act==='cancelW'){ask('Hætta við þessa æfingu?',()=>{S.active=null;RT=null;save();render()})}
+  else if(act==='finishW')finishW();
+  else if(act==='delW'){ask('Eyða þessari æfingu?',()=>{S.workouts=S.workouts.filter(w=>w.id!==v);save();render()})}
+  else if(act==='newPlan')newPlanModal();
+  else if(act==='planSave'){const n=$('#pn').value.trim();if(!n||!pickSel.length){toast('Settu nafn og veldu æfingar');return}S.plans.push({id:uid(),name:n,ex:pickSel.slice()});save();closeM();render()}
+  else if(act==='delPlan'){ask('Eyða áætlun?',()=>{S.plans=S.plans.filter(p=>p.id!==v);save();render()})}
+  else if(act==='newEx')newExModal();
+  else if(act==='exSave'){const n=$('#xn').value.trim();if(!n){toast('Vantar nafn');return}{const m=$('#xg').value;S.custom.push({id:'c'+uid(),name:n,grp:GRP[m],g:1,bw:$('#xb').checked,eq:['bw'],p:[m],s:[],c:false})};save();closeM();render()}
+  else if(act==='delEx'){ask('Eyða æfingu úr listanum?',()=>{S.custom=S.custom.filter(e=>e.id!==v);save();render()})}
+  else if(act==='askNo'){askCb=null;closeM()}
+  else if(act==='askYes'){const cb=askCb;askCb=null;closeM();if(cb)cb()}
+  else if(act==='tPre'){const p=TPRE[+v];S.tcfg={ex:tRoll(+v),work:p.work,rest:p.rest,rounds:p.rounds,name:p.name,pre:+v};save();render()}
+  else if(act==='tShuf'){S.tcfg.ex=tRoll(S.tcfg.pre);save();render()}
+  else if(act==='tDel'){S.tcfg.ex.splice(+v,1);delete S.tcfg.pre;save();render()}
+  else if(act==='tAdd')exPicker('timed');
+  else if(act==='tAdj'){const [k,d]=v.split(':'),lim={work:[5,300],rest:[0,180],rounds:[1,10]}[k];S.tcfg[k]=Math.min(lim[1],Math.max(lim[0],S.tcfg[k]+num(d)));save();render()}
+  else if(act==='tStart'){if(S.tcfg.ex.length)tStart()}
+  else if(act==='tPause')tPause();
+  else if(act==='tSkip'){if(TR)tNext(false)}
+  else if(act==='tQuit')ask('Hætta við tímaæfinguna?',()=>tStop());
+  else if(act==='tDelW')ask('Eyða þessari tímaæfingu?',()=>{S.tworkouts=S.tworkouts.filter(t=>t.id!==v);save();render()});
+  else if(act==='muscle')muscleModal(v);
+  else if(act==='restGo')startRest();
+  else if(act==='restSkip'){RT=null;lastMode='';drawRest()}
+  else if(act==='restAdj'&&RT){RT.end+=num(v)*1000;RT.dur=Math.max(15,RT.dur+num(v));drawRest()}
+  else if(act==='restS'){S.rest=Math.min(600,Math.max(15,S.rest+num(v)));save();drawRest()}
+  else if(act==='genOpen')genModal();
+  else if(act==='gPlace'){G.place=v;G.eq=v==='gym'?['db','bb','bar','mach']:[];genModal()}
+  else if(act==='gDays'){G.days=+v;genModal()}
+  else if(act==='gFocus'){G.focus=v==='all'?[]:G.focus.includes(v)?G.focus.filter(x=>x!==v):G.focus.concat(v);genModal()}
+  else if(act==='gEq'){G.eq=G.eq.includes(v)?G.eq.filter(x=>x!==v):G.eq.concat(v);genModal()}
+  else if(act==='gMake'){G.seed=0;genPreview()}
+  else if(act==='gShuffle'){G.seed++;genPreview()}
+  else if(act==='gBack')genModal();
+  else if(act==='gSave')genSave();
+  else if(act==='delProg'){ask('Eyða öllu prógramminu?',()=>{S.plans=S.plans.filter(p=>p.prog!==v);save();render()})}
+  else if(act==='bkCopy'){const txt=JSON.stringify(S);const ta=$('#bk');ta.value=txt;ta.select();try{navigator.clipboard.writeText(txt).then(()=>toast('Afritað!'),()=>toast('Merktu textann og afritaðu'))}catch(x){toast('Merktu textann og afritaðu')}}
+  else if(act==='bkLoad'){try{const d=JSON.parse($('#bk').value);if(!d||!Array.isArray(d.workouts))throw 0;ask('Þetta skiptir út núverandi gögnum. Halda áfram?',()=>{S=Object.assign(def(),d);save();render();toast('Gögn hlaðin inn')})}catch(x){toast('Ógilt afrit')}}
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.f&&S.active){const s=S.active.items[+t.dataset.i].sets[+t.dataset.s];s[t.dataset.f]=num(t.value);save()}
+  else if(t.dataset.act==='setName'){S.name=t.value;save()}
+  else if(t.dataset.act==='setBw'){const b=num(t.value);if(b>20&&b<300){S.bw=b;save()}}
+  else if(t.id==='q')drawPick(t.value);
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.pick){const id=t.dataset.pick;pickSel=t.checked?pickSel.concat(id):pickSel.filter(x=>x!==id)}
+  else if(t.dataset.act==='pgEx'){pgEx=t.value;render()}
+  else if(t.dataset.act==='setBw')render();
+  else if(t.dataset.act==='autoRest'){S.autoRest=t.checked;save()}
+});
+setInterval(()=>{if(S.active&&tab==='train'&&!document.activeElement.matches('input')&&!$('#modal').innerHTML)render()},60000);
+render();
+try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
+</script>
+</body>
+</html>
