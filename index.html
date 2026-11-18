@@ -71,7 +71,11 @@ svg.ch{width:100%;height:auto;display:block}
 #trun.flash{animation:fl .6s 2}
 @keyframes fl{0%,100%{filter:none}50%{filter:brightness(2)}}
 button:disabled{opacity:.4}
-button.pri,.chip.on{color:#04201a}
+button.pri,button.ok,.chip.on,.chk.d{background:linear-gradient(135deg,#3a9f8a,#1b4f44);border-color:#2b7a69;color:#e6f6f1}
+button.dng{color:#b4bfbd;background:#1c2423;border-color:#2e3b3a}
+button.gry{background:#2d3735;border-color:#3d4a48;color:#e8eeec}
+#trun button{background:rgba(0,0,0,.28);border-color:rgba(255,255,255,.25);color:#fff}
+#trun button.dng{background:rgba(0,0,0,.6);color:#d5dcdb}
 </style>
 </head>
 <body>
@@ -308,7 +312,7 @@ function genPreview(){
   <div class="mut" style="margin-top:4px">${G.days} dagar í viku · ${G.place==='gym'?'Ræktin':'Heima'}${G.focus.length?' · áhersla: '+G.focus.map(m=>MU[m]).join(', '):''}</div>
   ${GEN.missing.length?`<div class="card" style="border-color:var(--warn)">Vantar áhöld fyrir: ${GEN.missing.map(m=>MU[m]).join(', ')}. Farðu til baka og bættu við áhöldum, eða vistaðu eins og það er.</div>`:''}
   ${GEN.sess.map((s,i)=>`<div class="card"><b>${DAYS[G.days][i]} – ${s.name}</b>${s.ex.map(e=>`<div class="li"><div class="thumb" style="width:44px">${body(e.p,e.s)}</div><div class="sp">${esc(e.name)}<div class="mus">${MU[e.p[0]]}</div></div></div>`).join('')}</div>`).join('')}
-  <div class="row"><button class="sp" data-act="gBack">← Breyta</button><button class="sp" data-act="gShuffle">🔀 Stokka</button></div>
+  <div class="row"><button class="sp" data-act="gBack">← Breyta</button><button class="sp gry" data-act="gShuffle">🔀 Stokka</button></div>
   <button class="ok full" data-act="gSave" style="padding:14px;margin-top:10px">Vista prógramm</button>`);
 }
 function genSave(){
@@ -336,7 +340,7 @@ function vTimed(){
   const rec=(S.tworkouts||[]).slice(-5).reverse();
   return `<h1>Tímaæfing</h1><p class="mut">Klukka segir þér hvað þú átt að gera og í hvað langan tíma.</p>
   <h2 style="margin-top:8px">Tilbúnir hringir</h2><div class="chips">${TPRE.map((p,i)=>`<div class="chip" data-act="tPre" data-v="${i}">${p.name}</div>`).join('')}</div>
-  <div class="card"><b>Æfingar í hring</b>${n?c.ex.map((id,i)=>{const ex=getEx(id);return `<div class="li"><div class="thumb" style="width:44px">${body(ex.p,ex.s)}</div><span class="sp">${esc(ex.name)}</span><button class="sm dng" data-act="tDel" data-v="${i}">✕</button></div>`}).join(''):'<div class="mut" style="margin:8px 0">Veldu tilbúinn hring hér að ofan eða bættu við æfingum.</div>'}${c.pre!==undefined?'<button class="full pri" data-act="tShuf" style="margin-top:8px">🔀 Stokka æfingar aftur</button>':''}<button class="full" data-act="tAdd" style="margin-top:8px">+ Bæta við æfingu</button></div>
+  <div class="card"><b>Æfingar í hring</b>${n?c.ex.map((id,i)=>{const ex=getEx(id);return `<div class="li"><div class="thumb" style="width:44px">${body(ex.p,ex.s)}</div><span class="sp">${esc(ex.name)}</span><button class="sm dng" data-act="tDel" data-v="${i}">✕</button></div>`}).join(''):'<div class="mut" style="margin:8px 0">Veldu tilbúinn hring hér að ofan eða bættu við æfingum.</div>'}${c.pre!==undefined?'<button class="full gry" data-act="tShuf" style="margin-top:8px">🔀 Stokka æfingar aftur</button>':''}<button class="full" data-act="tAdd" style="margin-top:8px">+ Bæta við æfingu</button></div>
   <div class="card">${tStepper('work','Vinna','sek',5)}${tStepper('rest','Hvíld','sek',5)}${tStepper('rounds','Hringir','',1)}</div>
   <div class="card row"><span class="sp">Heildartími</span><b>${fmtT(tot)}</b></div>
   <button class="ok full" data-act="tStart" style="padding:16px;font-size:18px" ${n?'':'disabled'}>🔥 Beast mode – byrja</button>
