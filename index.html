@@ -421,7 +421,7 @@ function tFinish(){
   const c=S.tcfg,xp=Math.round(c.work*c.ex.length*c.rounds/6),mins=Math.max(1,Math.round((Date.now()-TR.start)/60000));
   S.tworkouts.push({id:uid(),date:Date.now(),name:TR.name,dur:mins,rounds:c.rounds,ex:c.ex.slice(),xp});save();
   tStop();beep2(988,.5);buzz([300,100,300,100,300]);render();
-  modal(`<div style="text-align:center"><div class="big">Tímaæfingu lokið!</div><div style="font-weight:700;color:var(--ac2);margin:2px 0 6px">${ic('check')}Locked in</div><p>${mins} mín · +${xp} Aura</p><button class="pri full" data-act="mclose2">Áfram</button></div>`);
+  modal(`<div style="text-align:center"><div class="big">Tímaæfingu lokið!</div><div style="font-weight:700;color:var(--ac2);margin:2px 0 6px">${ic('check')}Locked in</div><p>${mins} mín · +${xp} XP</p><button class="pri full" data-act="mclose2">Áfram</button></div>`);
 }
 
 const TIERS=[['Járn',0,'#8b95a7'],['Brons',.35,'#cd7f32'],['Silfur',.65,'#c9d1de'],['Gull',1,'#f2c14e'],['Platína',1.3,'#4fd1c5'],['Demantur',1.6,'#6cb4ff'],['Meistari',2,'#c084fc']];
@@ -465,13 +465,13 @@ function render(){
   lastMode='';drawRest();
 }
 function header(){const x=totalXp(),l=lvlOf(x),a=40*(l-1)*(l-1),b=40*l*l,p=Math.min(100,(x-a)/(b-a)*100);
-  return `<div class="hdr"><div class="lvl">${l}</div><div class="sp"><div class="row"><b>${esc(S.name||'Aura-fari')}</b><span class="sp"></span><span style="color:var(--sand);font-weight:600;font-size:14px">${x} Aura-stig</span></div><div class="bar" style="margin-top:6px"><i style="width:${p}%;background:var(--sand)"></i></div></div></div>`}
+  return `<div class="hdr"><div class="lvl">${l}</div><div class="sp"><div class="row"><b>${esc(S.name||'Nafn')}</b><span class="sp"></span><span style="color:var(--sand);font-weight:600;font-size:14px">${x} XP</span></div><div class="bar" style="margin-top:6px"><i style="width:${p}%;background:var(--sand)"></i></div></div></div>`}
 
 function vTrain(){
   const a=S.active;
   if(!a){
     const recent=S.workouts.slice(-6).reverse();
-    return `<h1>Æfing</h1><p class="mut">Lock in, safnaðu Aura-stigum og klifraðu upp í rank.</p>
+    return `<h1>Æfing</h1><p class="mut">Lock in, safnaðu XP og klifraðu upp í rank.</p>
     <button class="pri full" data-act="startEmpty" style="padding:14px">${ic('lock')}Lock in – byrja æfingu</button>
     ${S.plans.length?'<h2>Úr áætlun</h2>'+S.plans.map(p=>`<div class="card row"><div class="sp"><b>${esc(p.name)}</b><div class="mut">${p.ex.length} æfingar</div></div><button class="sm pri" data-act="startPlan" data-v="${p.id}">Byrja</button></div>`).join(''):''}
     <h2>Síðustu æfingar</h2>${recent.length?recent.map(wCard).join(''):'<div class="card mut">Engar æfingar skráðar enn.</div>'}`;
@@ -527,12 +527,12 @@ function vProg(){
 }
 function vRank(){
   const o=overall(),l=exScores();
-  if(!l.length)return `<h1>Rank</h1><div class="card mut">Skráðu æfingar til að fá rank. Aura-stigin reiknast út frá styrk miðað við líkamsþyngd (${S.bw} kg – breyta í „Ég“).</div>`;
+  if(!l.length)return `<h1>Rank</h1><div class="card mut">Skráðu æfingar til að fá rank. Stigin reiknast út frá styrk miðað við líkamsþyngd (${S.bw} kg – breyta í „Ég“).</div>`;
   const ti=tierOf(o),nx=TIERS[ti+1];
   const p=nx?Math.min(100,(o-TIERS[ti][1])/(nx[1]-TIERS[ti][1])*100):100;
-  return `<h1>Rank</h1><div class="card" style="text-align:center"><div class="mut">Heildarstyrkur</div><div class="big" style="color:${TIERS[ti][2]}">${TIERS[ti][0]}</div><div class="mut">${Math.round(o*100)} Aura-stig${nx?' · '+Math.round(nx[1]*100)+' í '+nx[0]:''}</div><div class="bar" style="margin-top:10px"><i style="width:${p}%;background:${TIERS[ti][2]}"></i></div></div>
+  return `<h1>Rank</h1><div class="card" style="text-align:center"><div class="mut">Heildarstyrkur</div><div class="big" style="color:${TIERS[ti][2]}">${TIERS[ti][0]}</div><div class="mut">${Math.round(o*100)} stig${nx?' · '+Math.round(nx[1]*100)+' í '+nx[0]:''}</div><div class="bar" style="margin-top:10px"><i style="width:${p}%;background:${TIERS[ti][2]}"></i></div></div>
   <h2>Æfingar</h2>${l.map(x=>{const i=tierOf(x.sc),n=TIERS[i+1],pp=n?Math.min(100,(x.sc-TIERS[i][1])/(n[1]-TIERS[i][1])*100):100;
-    return `<div class="card"><div class="row"><b class="sp">${esc(x.ex.name)}</b>${badge(i)}</div><div class="mut" style="margin:4px 0 8px">1RM ~${Math.round(x.e)} kg · ${Math.round(x.sc*100)} Aura-stig</div><div class="bar"><i style="width:${pp}%;background:${TIERS[i][2]}"></i></div></div>`}).join('')}
+    return `<div class="card"><div class="row"><b class="sp">${esc(x.ex.name)}</b>${badge(i)}</div><div class="mut" style="margin:4px 0 8px">1RM ~${Math.round(x.e)} kg · ${Math.round(x.sc*100)} stig</div><div class="bar"><i style="width:${pp}%;background:${TIERS[i][2]}"></i></div></div>`}).join('')}
   <p class="mut">Rank miðast við áætlað 1RM (Epley) deilt með líkamsþyngd. Heildarstyrkur er meðaltal fimm bestu æfinganna.</p>`;
 }
 function vMe(){
@@ -605,7 +605,7 @@ function finishW(){
   items.forEach(it=>{const ex=getEx(it.ex),before=bestE(it.ex),now=bestE(it.ex,[w]);if(before>0&&now>before)prs.push(ex.name);it.sets.forEach(s=>{xp+=setXp(ex,s);sets++})});
   const lvB=lvlOf(totalXp());S.workouts.push(w);S.active=null;RT=null;save();
   const lvA=lvlOf(totalXp());tab='train';render();
-  modal(`<div style="text-align:center"><div class="big">Vel gert!</div><div style="font-weight:700;color:var(--ac2);margin:2px 0 6px">${ic('check')}Locked in</div><p>${sets} sett · +${xp} Aura</p>${lvA>lvB?`<p><b>Nýtt level: ${lvA}!</b></p>`:''}${prs.length?`<div class="card"><b style="color:var(--sand)">${ic('trophy')}Ný met</b><div class="mut" style="margin-top:4px">${prs.map(esc).join(', ')}</div></div>`:''}<button class="pri full" data-act="mclose2">Áfram</button></div>`);
+  modal(`<div style="text-align:center"><div class="big">Vel gert!</div><div style="font-weight:700;color:var(--ac2);margin:2px 0 6px">${ic('check')}Locked in</div><p>${sets} sett · +${xp} XP</p>${lvA>lvB?`<p><b>Nýtt level: ${lvA}!</b></p>`:''}${prs.length?`<div class="card"><b style="color:var(--sand)">${ic('trophy')}Ný met</b><div class="mut" style="margin-top:4px">${prs.map(esc).join(', ')}</div></div>`:''}<button class="pri full" data-act="mclose2">Áfram</button></div>`);
 }
 
 /* ---- Atburðir ---- */
@@ -630,7 +630,7 @@ document.addEventListener('click',e=>{
       if(!valid(ex,s)){toast('Settu inn endurtekningar'+(ex.bw?'':' og kg'));render();return}
       const before=Math.max(bestE(it.ex),...it.sets.filter((x,k)=>k!==j&&x.done&&valid(ex,x)).map(x=>e1rm(ex,x.w,x.r)),0);
       s.done=true;const e=e1rm(ex,s.w,s.r);
-      toast(before>0&&e>before?'Nýtt met! +'+setXp(ex,s)+' Aura':'+'+setXp(ex,s)+' Aura');
+      toast(before>0&&e>before?'Nýtt met! +'+setXp(ex,s)+' XP':'+'+setXp(ex,s)+' XP');
     }else s.done=false;
     save();render();if(s.done&&S.autoRest)startRest();
   }
