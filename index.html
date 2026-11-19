@@ -61,6 +61,7 @@ svg.ch{width:100%;height:auto;display:block}
 .restbar{background:#17332e;border:1px solid #2fc4a5;border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:8px;position:relative;overflow:hidden}
 .restbar .t{font-size:24px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
 .restbar .pg{position:absolute;left:0;bottom:0;height:3px;background:var(--ac2)}
+.pimg{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block}
 .thumb{width:64px;flex:none;cursor:pointer}.thumb svg{width:100%;height:auto;display:block}
 .mus{font-size:12px;color:var(--mut)}
 #trun{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center;color:#fff;transition:background .2s}
@@ -218,12 +219,13 @@ function body(p,s){
   const fig=front=>`<circle cx="50" cy="16" r="11" fill="${B}"/><rect x="45" y="26" width="10" height="10" fill="${B}"/>${half(front)}<g transform="translate(100 0) scale(-1 1)">${half(front)}</g>`;
   return `<svg viewBox="0 0 210 224" xmlns="http://www.w3.org/2000/svg">${fig(true)}<g transform="translate(110 0)">${fig(false)}</g></svg>`;
 }
-const thumb=ex=>`<div class="thumb" data-act="muscle" data-v="${ex.id}">${body(ex.p,ex.s)}</div>`;
+const exImg=ex=>ex.img?`<img class="pimg" src="${ex.img}" alt="">`:body(ex.p||[],ex.s||[]);
+const thumb=ex=>`<div class="thumb" data-act="muscle" data-v="${ex.id}">${exImg(ex)}</div>`;
 function muscTxt(ex){const a=ex.p.map(m=>MU[m]).join(', '),b=ex.s.map(m=>MU[m]).join(', ');return (a?'Aðal: '+a:'')+(b?' · Aukalega: '+b:'')}
 function muscleModal(id){
   const ex=getEx(id);
   modal(`<div class="row"><h1 class="sp" style="margin:0">${esc(ex.name)}</h1><button class="sm" data-act="mclose2">Loka</button></div>
-  <div style="max-width:320px;margin:12px auto 4px">${body(ex.p,ex.s)}</div><div class="mut" style="text-align:center;margin-bottom:12px">Framhlið · Bakhlið</div>
+  ${ex.img?`<img class="pimg" src="${ex.img}" style="max-width:320px;margin:12px auto;aspect-ratio:auto" alt="">`:''}${ex.p.length?`<div style="max-width:320px;margin:12px auto 4px">${body(ex.p,ex.s)}</div><div class="mut" style="text-align:center;margin-bottom:12px">Framhlið · Bakhlið</div>`:''}
   <p><span class="badge" style="color:#2fc4a5;border-color:#2fc4a555">Aðal</span> ${ex.p.map(m=>MU[m]).join(', ')||'–'}</p>
   <p><span class="badge" style="color:#9be7d4;border-color:#9be7d455">Aukalega</span> ${ex.s.map(m=>MU[m]).join(', ')||'–'}</p>`);
 }
@@ -355,7 +357,7 @@ function vTimed(){
   const rec=(S.tworkouts||[]).slice(-5).reverse();
   return `<h1>Tímaæfing</h1><p class="mut">Klukka segir þér hvað þú átt að gera og í hvað langan tíma.</p>
   <h2 style="margin-top:8px">Tilbúnir hringir</h2><div class="chips">${TPRE.map((p,i)=>`<div class="chip" data-act="tPre" data-v="${i}">${p.name}</div>`).join('')}</div>
-  <div class="card"><b>Æfingar í hring</b>${n?c.ex.map((id,i)=>{const ex=getEx(id);return `<div class="li"><div class="thumb" style="width:44px">${body(ex.p,ex.s)}</div><span class="sp">${esc(ex.name)}</span><button class="sm dng" data-act="tDel" data-v="${i}">✕</button></div>`}).join(''):'<div class="mut" style="margin:8px 0">Veldu tilbúinn hring hér að ofan eða bættu við æfingum.</div>'}${c.pre!==undefined?'<button class="full gry" data-act="tShuf" style="margin-top:8px">'+ic('shuffle')+'Stokka æfingar aftur</button>':''}<button class="full" data-act="tAdd" style="margin-top:8px">+ Bæta við æfingu</button></div>
+  <div class="card"><b>Æfingar í hring</b>${n?c.ex.map((id,i)=>{const ex=getEx(id);return `<div class="li"><div class="thumb" style="width:44px">${exImg(ex)}</div><span class="sp">${esc(ex.name)}</span><button class="sm dng" data-act="tDel" data-v="${i}">✕</button></div>`}).join(''):'<div class="mut" style="margin:8px 0">Veldu tilbúinn hring hér að ofan eða bættu við æfingum.</div>'}${c.pre!==undefined?'<button class="full gry" data-act="tShuf" style="margin-top:8px">'+ic('shuffle')+'Stokka æfingar aftur</button>':''}<button class="full" data-act="tAdd" style="margin-top:8px">+ Bæta við æfingu</button></div>
   <div class="card">${tStepper('work','Vinna','sek',5)}${tStepper('rest','Hvíld','sek',5)}${tStepper('rounds','Hringir','',1)}</div>
   <div class="card row"><span class="sp">Heildartími</span><b>${fmtT(tot)}</b></div>
   <button class="ok full" data-act="tStart" style="padding:16px;font-size:18px" ${n?'':'disabled'}>${ic('flame')}Byrja tímaæfingu</button>
@@ -479,7 +481,7 @@ function vTrain(){
   const mins=Math.floor((Date.now()-a.start)/60000);
   return `<div class="row"><h1 class="sp">${esc(a.name||'Æfing')}</h1><span class="mut">${mins} mín</span></div>
   ${a.items.map((it,i)=>{const ex=getEx(it.ex),prev=lastSets(it.ex)||[];
-    return `<div class="card"><div class="row">${thumb(ex)}<div class="sp"><b>${esc(ex.name)}</b><div class="mus">${muscTxt(ex)}</div>${it.note?`<div class="mus" style="color:#8be8cf">${esc(it.note)}</div>`:''}${ex.bw?'<div class="mus">líkamsþyngd + auka kg</div>':''}</div><button class="sm dng" data-act="delItem" data-i="${i}">✕</button></div>
+    return `<div class="card"><div class="row">${thumb(ex)}<div class="sp"><b>${esc(ex.name)}</b><div class="mus">${muscTxt(ex)}</div>${it.note?`<div class="mus" style="color:#8be8cf">${esc(it.note)}</div>`:''}${ex.bw?'<div class="mus">líkamsþyngd + auka kg</div>':''}</div><button class="sm" data-act="swapItem" data-i="${i}">Skipta</button><button class="sm dng" data-act="delItem" data-i="${i}">✕</button></div>
     <div class="sets"><div class="h">SETT</div><div class="h">SÍÐAST</div><div class="h">KG</div><div class="h">ENDUR</div><div class="h"></div>
     ${it.sets.map((s,j)=>{const p=prev[j];return `<div class="n">${j+1}</div><div class="pv">${p?r1(p.w)+'×'+p.r:'–'}</div>
       <input type="number" inputmode="decimal" step="any" data-i="${i}" data-s="${j}" data-f="w" value="${s.w||''}" placeholder="${p?r1(p.w):'0'}" ${s.done?'class="done"':''}>
@@ -496,7 +498,7 @@ function wCard(w){
 
 function vPlans(){
   const planCard=p=>{const ps=[...new Set(p.ex.flatMap(id=>getEx(id).p))];
-    return `<div class="card"><div class="row"><div class="thumb" style="width:56px">${body(ps,[])}</div><div class="sp"><b>${esc(p.name)}</b><div class="mus">${p.ex.length} æfingar</div></div><button class="sm pri" data-act="startPlan" data-v="${p.id}">Byrja</button><button class="sm dng" data-act="delPlan" data-v="${p.id}">✕</button></div><div class="tags" style="margin-top:8px">${p.ex.map(id=>`<span class="tag">${esc(getEx(id).name)}</span>`).join('')}</div></div>`};
+    return `<div class="card"><div class="row"><div class="thumb" style="width:56px">${body(ps,[])}</div><div class="sp"><b>${esc(p.name)}</b><div class="mus">${p.ex.length} æfingar</div></div><button class="sm pri" data-act="startPlan" data-v="${p.id}">Byrja</button><button class="sm" data-act="editPlan" data-v="${p.id}">Breyta</button><button class="sm dng" data-act="delPlan" data-v="${p.id}">✕</button></div><div class="tags" style="margin-top:8px">${p.ex.map(id=>`<span class="tag">${esc(getEx(id).name)}</span>`).join('')}</div></div>`};
   const progs=[];S.plans.forEach(p=>{if(p.prog&&!progs.includes(p.prog))progs.push(p.prog)});
   const own=S.plans.filter(p=>!p.prog);
   return `<h1>Æfingaáætlanir</h1><p class="mut">Láttu appið búa til prógramm, eða settu saman þína eigin áætlun.</p>
@@ -548,32 +550,47 @@ function vMe(){
 /* ---- Gluggar ---- */
 function modal(html){$('#modal').innerHTML=`<div class="modal" data-act="mclose"><div class="sheet" id="sheet">${html}</div></div>`}
 function closeM(){$('#modal').innerHTML=''}
-let pickMode=null,pickSel=[];
-function exPicker(mode){
-  pickMode=mode;pickSel=[];
-  const groups=[...new Set(allEx().map(e=>e.grp))];
-  modal(`<div class="row"><h1 class="sp" style="margin:0">Veldu æfingar</h1><button class="sm" data-act="mclose2">Loka</button></div>
+let pickMode=null,pickSel=[],swapI=0,pickName='';
+function exPicker(mode,keep){
+  pickMode=mode;if(!keep)pickSel=[];
+  modal(`<div class="row"><h1 class="sp" style="margin:0">${mode==='swap'?'Skipta um æfingu':'Veldu æfingar'}</h1><button class="sm" data-act="mclose2">Loka</button></div>
   <input id="q" placeholder="Leita…" style="margin:10px 0">
-  <div id="plist"></div><button class="pri full" data-act="pickDone" style="margin-top:10px">Bæta við</button>`);
+  <div id="plist"></div><button class="pri full" data-act="pickDone" style="margin-top:10px">${mode==='swap'?'Skipta':'Bæta við'}</button>`);
   drawPick('');
 }
 function drawPick(q){
-  q=q.toLowerCase();const groups=[...new Set(allEx().map(e=>e.grp))];
-  $('#plist').innerHTML=groups.map(g=>{const l=allEx().filter(e=>e.grp===g&&(e.name.toLowerCase().includes(q)||(MU[(e.p||[])[0]]||'').toLowerCase().includes(q)));
-    return l.length?`<div class="mut" style="margin-top:10px">${g}</div>`+l.map(e=>`<label class="li"><input type="checkbox" data-pick="${e.id}" ${pickSel.includes(e.id)?'checked':''}><div class="thumb" style="width:48px">${body(e.p||[],e.s||[])}</div><span class="sp">${esc(e.name)}<div class="mus">${MU[(e.p||[])[0]]||''}</div></span></label>`).join(''):''}).join('');
+  q=q.toLowerCase();const groups=[...new Set(allEx().map(e=>e.grp))];const sw=pickMode==='swap';
+  const nb=`<button class="full" data-act="newExP" style="margin-bottom:4px">+ Ný æfing${q?' „'+esc($('#q')?$('#q').value:q)+'“':' (texti eða mynd)'}</button>`;
+  const list=groups.map(g=>{const l=allEx().filter(e=>e.grp===g&&(e.name.toLowerCase().includes(q)||(MU[(e.p||[])[0]]||'').toLowerCase().includes(q)));
+    return l.length?`<div class="mut" style="margin-top:10px">${g}</div>`+l.map(e=>`<label class="li"><input type="${sw?'radio':'checkbox'}" name="pk" data-pick="${e.id}" ${pickSel.includes(e.id)?'checked':''}><div class="thumb" style="width:48px">${exImg(e)}</div><span class="sp">${esc(e.name)}<div class="mus">${MU[(e.p||[])[0]]||''}</div></span></label>`).join(''):''}).join('');
+  $('#plist').innerHTML=nb+(list||'<div class="mut" style="margin:10px 0">Engin æfing fannst – búðu hana til með hnappnum hér að ofan.</div>')+(list?'':'');
 }
-function newPlanModal(){
-  pickMode='plan';pickSel=[];
+function newPlanModal(keep,name){
+  pickMode='plan';if(!keep)pickSel=[];
   modal(`<div class="row"><h1 class="sp" style="margin:0">Ný áætlun</h1><button class="sm" data-act="mclose2">Loka</button></div>
-  <input id="pn" placeholder="Nafn, t.d. Brjóst og þríhöfði" style="margin:10px 0"><input id="q" placeholder="Leita að æfingu…" style="margin-bottom:6px"><div id="plist"></div>
+  <input id="pn" placeholder="Nafn, t.d. Brjóst og þríhöfði" value="${esc(name||'')}" style="margin:10px 0"><input id="q" placeholder="Leita að æfingu…" style="margin-bottom:6px"><div id="plist"></div>
   <button class="pri full" data-act="planSave" style="margin-top:10px">Vista áætlun</button>`);
   drawPick('');
 }
-function newExModal(){
+let xImg='',exFromPick=false,PE=null;
+function readImg(file,cb){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const m=480,k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.72))};im.src=r.result};r.readAsDataURL(file)}
+function newExModal(name){
+  xImg='';
   modal(`<div class="row"><h1 class="sp" style="margin:0">Ný æfing</h1><button class="sm" data-act="mclose2">Loka</button></div>
-  <input id="xn" placeholder="Nafn æfingar" style="margin:10px 0"><div class="mut">Hvaða vöðva æfir hún mest?</div><select id="xg">${Object.keys(MU).map(m=>`<option value="${m}">${MU[m]}</option>`).join('')}</select>
+  <input id="xn" placeholder="Nafn, t.d. Bakfetta með lóði" value="${esc(name||'')}" style="margin:10px 0">
+  <div class="mut">Mynd af tækinu (valfrjálst)</div>
+  <label class="full" style="display:block;text-align:center;padding:12px;margin:6px 0;border:1px dashed var(--line);border-radius:12px;cursor:pointer"><span id="xpl">Taka mynd eða velja mynd</span><input id="xp" type="file" accept="image/*" style="display:none"></label>
+  <div id="xpv"></div>
+  <div class="mut">Hvaða vöðva æfir hún mest?</div><select id="xg"><option value="">Veit ekki / annað</option>${Object.keys(MU).map(m=>`<option value="${m}">${MU[m]}</option>`).join('')}</select>
   <label class="li"><input type="checkbox" id="xb"><span>Líkamsþyngdaræfing (t.d. upphífingar)</span></label>
   <button class="pri full" data-act="exSave">Vista</button>`);
+}
+function editPlanModal(){
+  modal(`<div class="row"><h1 class="sp" style="margin:0">Breyta áætlun</h1><button class="sm" data-act="mclose2">Loka</button></div>
+  <input id="pn" value="${esc(PE.name)}" style="margin:10px 0">
+  ${PE.ex.map((id,i)=>{const ex=getEx(id);return `<div class="li"><div class="thumb" style="width:44px">${exImg(ex)}</div><span class="sp">${esc(ex.name)}</span><button class="sm" data-act="peUp" data-v="${i}"${i?'':' disabled'}>↑</button><button class="sm" data-act="peDn" data-v="${i}"${i<PE.ex.length-1?'':' disabled'}>↓</button><button class="sm dng" data-act="peDel" data-v="${i}">✕</button></div>`}).join('')||'<div class="mut">Engar æfingar</div>'}
+  <button class="full" data-act="peAdd" style="margin-top:10px">+ Bæta við æfingu</button>
+  <button class="pri full" data-act="peSave" style="margin-top:10px">Vista</button>`);
 }
 
 /* ---- Æfing: aðgerðir ---- */
@@ -619,7 +636,18 @@ document.addEventListener('click',e=>{
   else if(act==='startEmpty')startW('Æfing',[]);
   else if(act==='startPlan'){const p=S.plans.find(x=>x.id===v);if(S.active){ask('Þú ert með æfingu í gangi. Hætta við hana og byrja þessa?',()=>startW(p.name,p.ex),'Já, byrja nýja');return}startW(p.name,p.ex)}
   else if(act==='pickEx')exPicker('active');
-  else if(act==='pickDone'){if(pickMode==='timed'){pickSel.forEach(id=>S.tcfg.ex.push(id));delete S.tcfg.pre}else if(S.active)pickSel.forEach(id=>S.active.items.push(mkItem(id)));save();closeM();render()}
+  else if(act==='swapItem'){swapI=i;exPicker('swap')}
+  else if(act==='pickDone'){
+    if(pickMode==='planadd'){PE.ex.push(...pickSel);editPlanModal();return}
+    if(pickMode==='swap'){if(!pickSel.length){toast('Veldu æfingu');return}if(S.active)S.active.items[swapI]=mkItem(pickSel[0])}
+    else if(pickMode==='timed'){pickSel.forEach(id=>S.tcfg.ex.push(id));delete S.tcfg.pre}else if(S.active)pickSel.forEach(id=>S.active.items.push(mkItem(id)));
+    save();closeM();render()}
+  else if(act==='newExP'){const q=$('#q')?$('#q').value.trim():'';const pn=$('#pn');if(pn)pickName=pn.value;exFromPick=true;newExModal(q)}
+  else if(act==='editPlan'){const p=S.plans.find(x=>x.id===v);PE={id:p.id,name:p.name,ex:p.ex.slice()};editPlanModal()}
+  else if(act==='peUp'||act==='peDn'){const k=+v,d=act==='peUp'?-1:1;PE.name=$('#pn').value;[PE.ex[k],PE.ex[k+d]]=[PE.ex[k+d],PE.ex[k]];editPlanModal()}
+  else if(act==='peDel'){PE.name=$('#pn').value;PE.ex.splice(+v,1);editPlanModal()}
+  else if(act==='peAdd'){PE.name=$('#pn').value;exPicker('planadd')}
+  else if(act==='peSave'){const n=$('#pn').value.trim();if(!n||!PE.ex.length){toast('Settu nafn og að minnsta kosti eina æfingu');return}const p=S.plans.find(x=>x.id===PE.id);p.name=n;p.ex=PE.ex.slice();save();closeM();render();toast('Áætlun vistuð ✓')}
   else if(act==='delItem'){S.active.items.splice(i,1);save();render()}
   else if(act==='addSet'){const s=S.active.items[i].sets,l=s[s.length-1]||{w:0,r:0};s.push({w:l.w,r:l.r,done:false});save();render()}
   else if(act==='delSet'){S.active.items[i].sets.pop();save();render()}
@@ -640,8 +668,12 @@ document.addEventListener('click',e=>{
   else if(act==='newPlan')newPlanModal();
   else if(act==='planSave'){const n=$('#pn').value.trim();if(!n||!pickSel.length){toast('Settu nafn og veldu æfingar');return}S.plans.push({id:uid(),name:n,ex:pickSel.slice()});save();closeM();render()}
   else if(act==='delPlan'){ask('Eyða áætlun?',()=>{S.plans=S.plans.filter(p=>p.id!==v);save();render()})}
-  else if(act==='newEx')newExModal();
-  else if(act==='exSave'){const n=$('#xn').value.trim();if(!n){toast('Vantar nafn');return}{const m=$('#xg').value;S.custom.push({id:'c'+uid(),name:n,grp:GRP[m],g:1,bw:$('#xb').checked,eq:['bw'],p:[m],s:[],c:false})};save();closeM();render()}
+  else if(act==='newEx'){exFromPick=false;newExModal()}
+  else if(act==='exSave'){const n=$('#xn').value.trim();if(!n){toast('Vantar nafn');return}const m=$('#xg').value,id='c'+uid();S.custom.push({id,name:n,grp:GRP[m]||'Annað',g:1,bw:$('#xb').checked,eq:['bw'],p:m?[m]:[],s:[],c:false,img:xImg||undefined});save();
+    if(exFromPick){exFromPick=false;const md=pickMode;if(md==='swap')pickSel=[id];else pickSel.push(id);
+      if(md==='plan')newPlanModal(true,pickName);else exPicker(md,true);
+      const l=$('#plist');if(l)drawPick('');toast('Æfing búin til ✓')}
+    else{closeM();render()}}
   else if(act==='delEx'){ask('Eyða æfingu úr listanum?',()=>{S.custom=S.custom.filter(e=>e.id!==v);save();render()})}
   else if(act==='askNo'){askCb=null;closeM()}
   else if(act==='askYes'){const cb=askCb;askCb=null;closeM();if(cb)cb()}
@@ -682,7 +714,8 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target;
-  if(t.dataset.pick){const id=t.dataset.pick;pickSel=t.checked?pickSel.concat(id):pickSel.filter(x=>x!==id)}
+  if(t.id==='xp'&&t.files[0]){$('#xpl').textContent='Hleð mynd…';readImg(t.files[0],d=>{xImg=d;$('#xpv').innerHTML=`<img class="pimg" src="${d}" style="max-width:220px;margin:6px auto;aspect-ratio:auto">`;$('#xpl').textContent='Skipta um mynd'})}
+  else if(t.dataset.pick){const id=t.dataset.pick;if(pickMode==='swap')pickSel=[id];else pickSel=t.checked?pickSel.concat(id):pickSel.filter(x=>x!==id)}
   else if(t.dataset.act==='pgEx'){pgEx=t.value;render()}
   else if(t.dataset.act==='setBw')render();
   else if(t.dataset.act==='autoRest'){S.autoRest=t.checked;save()}
