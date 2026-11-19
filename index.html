@@ -573,14 +573,46 @@ function newPlanModal(keep,name){
   drawPick('');
 }
 let xImg='',exFromPick=false,PE=null;
-function readImg(file,cb){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const m=480,k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.72))};im.src=r.result};r.readAsDataURL(file)}
+function readImg(file,cb){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const mk=m=>{const k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c};cb(mk(480).toDataURL('image/jpeg',.72),mk(2000))};im.src=r.result};r.readAsDataURL(file)}
+/* Þekkir texta á tækjamerkimiðum (OCR) og giskar á æfingu */
+const MACH=[
+ ['hip abduction','Mjaðmafráfærsla í tæki','glutes'],['hip adduction','Mjaðmaaðfærsla í tæki','quads'],
+ ['leg press','Fótapressa','quads'],['leg extension','Fótalenging','quads'],['leg curl','Fótabeygja í tæki','hams'],
+ ['chest press','Brjóstpressa í tæki','chest'],['pec deck','Pec deck','chest'],['pec fly','Pec fly','chest'],['butterfly','Pec deck','chest'],
+ ['shoulder press','Axlapressa í tæki','shoulders'],['lateral raise','Hliðarlyfta í tæki','shoulders'],['rear delt','Aftari axlir í tæki','upback'],
+ ['lat pulldown','Niðurtog','lats'],['pulldown','Niðurtog','lats'],['seated row','Sitjandi róður í tæki','upback'],['low row','Róður í tæki','upback'],['row','Róður í tæki','upback'],
+ ['back extension','Bakfetta í tæki','upback'],['lower back','Bakfetta í tæki','upback'],['abdominal','Magaæfing í tæki','abs'],['ab crunch','Magaæfing í tæki','abs'],
+ ['biceps curl','Bicepscurl í tæki','biceps'],['arm curl','Bicepscurl í tæki','biceps'],['triceps','Triceps í tæki','triceps'],['dip','Dýfur í tæki','triceps'],
+ ['calf','Kálfalyfta í tæki','calves'],['glute','Rassæfing í tæki','glutes'],['kickback','Rassspyrna í tæki','glutes'],['squat','Hnébeygja í tæki','quads'],['chest','Brjóstæfing í tæki','chest']];
+function lev(a,b){const d=[];for(let i=0;i<=a.length;i++){d[i]=[i]}for(let j=1;j<=b.length;j++)d[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[a.length][b.length]}
+function matchMach(txt){
+  const ws=txt.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).filter(w=>w.length>2);
+  for(const m of MACH){const toks=m[0].split(' ');
+    if(toks.every(t=>ws.some(w=>lev(w,t)<=(t.length>5?2:t.length>3?1:0))))return m}
+  return null}
+function loadTess(){return new Promise((ok,no)=>{if(window.Tesseract)return ok();const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';sc.onload=ok;sc.onerror=no;document.head.appendChild(sc)})}
+async function ocrFill(canvas){
+  const st=$('#xst');if(!st)return;
+  try{
+    st.textContent='Les texta á tækinu… (fyrsta skiptið tekur smástund)';
+    await loadTess();
+    const g=document.createElement('canvas');g.width=canvas.width;g.height=canvas.height;const cx=g.getContext('2d');cx.filter='grayscale(1) contrast(1.3)';cx.drawImage(canvas,0,0);
+    const w=await Tesseract.createWorker('eng');await w.setParameters({tessedit_pageseg_mode:'11'});
+    const r=await w.recognize(g);await w.terminate();
+    const m=matchMach(r.data.text||'');
+    if(!$('#xst'))return;
+    if(m){const n=$('#xn');if(!n.value.trim()||n.dataset.auto)n.value=m[1],n.dataset.auto='1';if(m[2])$('#xg').value=m[2];
+      st.innerHTML='Þekkti tækið: <b>'+esc(m[0])+'</b> ✓ – athugaðu nafnið og vistaðu';}
+    else st.textContent='Fann ekki texta sem ég þekki – skrifaðu nafnið sjálf.';
+  }catch(e){const t=$('#xst');if(t)t.textContent='Gat ekki lesið myndina (þarf netsamband). Skrifaðu nafnið sjálf.'}
+}
 function newExModal(name){
   xImg='';
   modal(`<div class="row"><h1 class="sp" style="margin:0">Ný æfing</h1><button class="sm" data-act="mclose2">Loka</button></div>
   <input id="xn" placeholder="Nafn, t.d. Bakfetta með lóði" value="${esc(name||'')}" style="margin:10px 0">
   <div class="mut">Mynd af tækinu (valfrjálst)</div>
   <label class="full" style="display:block;text-align:center;padding:12px;margin:6px 0;border:1px dashed var(--line);border-radius:12px;cursor:pointer"><span id="xpl">Taka mynd eða velja mynd</span><input id="xp" type="file" accept="image/*" style="display:none"></label>
-  <div id="xpv"></div>
+  <div id="xpv"></div><div id="xst" class="mut" style="margin:4px 0"></div>
   <div class="mut">Hvaða vöðva æfir hún mest?</div><select id="xg"><option value="">Veit ekki / annað</option>${Object.keys(MU).map(m=>`<option value="${m}">${MU[m]}</option>`).join('')}</select>
   <label class="li"><input type="checkbox" id="xb"><span>Líkamsþyngdaræfing (t.d. upphífingar)</span></label>
   <button class="pri full" data-act="exSave">Vista</button>`);
@@ -714,7 +746,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target;
-  if(t.id==='xp'&&t.files[0]){$('#xpl').textContent='Hleð mynd…';readImg(t.files[0],d=>{xImg=d;$('#xpv').innerHTML=`<img class="pimg" src="${d}" style="max-width:220px;margin:6px auto;aspect-ratio:auto">`;$('#xpl').textContent='Skipta um mynd'})}
+  if(t.id==='xp'&&t.files[0]){$('#xpl').textContent='Hleð mynd…';readImg(t.files[0],(d,big)=>{xImg=d;ocrFill(big);$('#xpv').innerHTML=`<img class="pimg" src="${d}" style="max-width:220px;margin:6px auto;aspect-ratio:auto">`;$('#xpl').textContent='Skipta um mynd'})}
   else if(t.dataset.pick){const id=t.dataset.pick;if(pickMode==='swap')pickSel=[id];else pickSel=t.checked?pickSel.concat(id):pickSel.filter(x=>x!==id)}
   else if(t.dataset.act==='pgEx'){pgEx=t.value;render()}
   else if(t.dataset.act==='setBw')render();
